@@ -1,0 +1,41 @@
+{
+  "name": "flight-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "next dev",
+    "build": "next build",
+    "postbuild": "next-sitemap",
+    "serve": "next start",
+    "lint": "next lint",
+    "clean:next": "rm -rf .next",
+    "clean:node": "rm -rf node_modules && rm -rf bun.lockb",
+    "clean:bun": "bun pm cache rm",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.5",
+    "@mui/joy": "^5.0.0-beta.51",
+    "classnames": "^2.5.1",
+    "eslint-config-next": "^14.1.0",
+    "next": "^14.1.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "sass": "^1.70.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.4",
+    "prettier-plugin-organize-imports": "^3.2.4",
+    "typescript": "^5.7.2"
+  }
+}

@@ -4,10 +4,11 @@ import {ADSBEndpointResponse} from "@/services/adsbTypes"
 type FetchAirplanesParams = {
   lat: number
   lon: number
+  /** Radius in nautical miles */
   radius: number
 }
 
-export const fetchAirplanes = async (
+export const getAirplanes = async (
   params: FetchAirplanesParams
 ): Promise<ADSBEndpointResponse> => {
   const {lat, lon, radius} = params

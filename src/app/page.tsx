@@ -1,11 +1,12 @@
 import {Container, Typography} from "@mui/joy"
-import RadarDemo from "@/components/RadarDemo"
+import ListDemo from "@/components/ListDemo"
 
 export default function Home() {
   return (
     <Container sx={{mt: 2}}>
       <Typography level="h1">Hello World</Typography>
-      <RadarDemo />
+      {/*<RadarDemo />*/}
+      <ListDemo />
       {/*<Map*/}
       {/*  mapboxAccessToken="<Mapbox access token>"*/}
       {/*  initialViewState={{*/}

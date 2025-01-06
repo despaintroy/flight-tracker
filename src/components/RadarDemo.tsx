@@ -25,7 +25,7 @@ const RadarDemo: FC = () => {
   const [airplanes, setAirplanes] = useState<AircraftData[] | null>(null)
   const [doFetch, setDoFetch] = useState(false)
 
-  const drawAirplanes = async () => {
+  const updateAirplanes = async () => {
     const response = await getAirplanes({
       lat: COORDS.lat,
       lon: COORDS.lon,
@@ -37,7 +37,7 @@ const RadarDemo: FC = () => {
 
   useEffect(() => {
     if (doFetch) {
-      const interval = setInterval(drawAirplanes, 1000)
+      const interval = setInterval(updateAirplanes, 1000)
       return () => clearInterval(interval)
     }
   }, [doFetch])

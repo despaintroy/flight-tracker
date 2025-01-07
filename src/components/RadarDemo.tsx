@@ -1,9 +1,12 @@
 "use client"
 
-import {FC, useEffect, useRef, useState} from "react"
+import * as React from "react"
+import {FC, useCallback, useEffect, useMemo, useState} from "react"
 import {Button} from "@mui/joy"
 import {getAirplanes} from "@/services/adsb"
 import {AircraftData} from "@/services/adsbTypes"
+import Map, {Layer, Source, ViewState} from "react-map-gl"
+import {MapEvent} from "mapbox-gl"
 
 const SLC_COORDS = {
   lat: 40.7903,
@@ -16,69 +19,90 @@ const _LOGAN_COORDS = {
 }
 
 const COORDS = SLC_COORDS
-const CANVAS_SIZE = 800
+const DEFAULT_ZOOM = 10
 const FETCH_RADIUS = 5
 
+type PartialViewState = Omit<ViewState, "padding">
+
 const RadarDemo: FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [zoom, setZoom] = useState(1)
   const [airplanes, setAirplanes] = useState<AircraftData[] | null>(null)
   const [doFetch, setDoFetch] = useState(false)
+  const [viewState, setViewState] = useState<PartialViewState>({
+    longitude: COORDS.lon,
+    latitude: COORDS.lat,
+    zoom: DEFAULT_ZOOM,
+    bearing: 0,
+    pitch: 0
+  })
 
-  const updateAirplanes = async () => {
+  const updateAirplanes = useCallback(async () => {
     const response = await getAirplanes({
-      lat: COORDS.lat,
-      lon: COORDS.lon,
+      lat: viewState.latitude,
+      lon: viewState.longitude,
       radius: FETCH_RADIUS
     })
     console.log(response)
     setAirplanes(response.ac)
-  }
+  }, [viewState.latitude, viewState.longitude])
 
   useEffect(() => {
     if (doFetch) {
       const interval = setInterval(updateAirplanes, 1000)
       return () => clearInterval(interval)
     }
-  }, [doFetch])
+  }, [doFetch, updateAirplanes])
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+  const onLoadMap = useCallback((e: MapEvent) => {
+    const map = e.target
 
-    // Clear
-    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
-
-    // Draw airplanes on canvas
-    airplanes?.forEach((airplane) => {
-      const xRatio = (airplane.lon - COORDS.lon) * zoom
-      const yRatio = (airplane.lat - COORDS.lat) * zoom
-
-      const x = CANVAS_SIZE / 2 + xRatio
-      const y = CANVAS_SIZE / 2 - yRatio
-
-      ctx.beginPath()
-      ctx.arc(x, y, 5, 0, 2 * Math.PI)
-      ctx.fill()
+    map.loadImage("airplane.png", (error, image) => {
+      if (error || !image) throw error
+      map.addImage("airplane-icon", image, {sdf: true})
     })
-  }, [airplanes, zoom])
+  }, [])
+
+  const airplanesGeoJSON = useMemo(() => {
+    return {
+      type: "FeatureCollection",
+      features: (airplanes ?? []).map((airplane) => ({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [airplane.lon, airplane.lat]
+        },
+        properties: {
+          rotation: airplane.track ?? airplane.true_heading
+        }
+      }))
+    }
+  }, [airplanes])
 
   return (
     <>
       <Button onClick={() => setDoFetch((prev) => !prev)}>
         {doFetch ? "FETCHING..." : "START FETCHING"}
       </Button>
-      <Button onClick={() => setZoom((prev) => prev * 2)}>+</Button>
-      <Button onClick={() => setZoom((prev) => prev / 2)}>-</Button>
 
-      <canvas
-        ref={canvasRef}
-        width={CANVAS_SIZE}
-        height={CANVAS_SIZE}
-        style={{display: "block", border: "1px solid black"}}
-      />
+      <Map
+        {...viewState}
+        onLoad={onLoadMap}
+        onMove={(e) => setViewState(e.viewState)}
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        mapStyle="mapbox://styles/despaintroy/cm5l6ikr5000501sv8n0s9jz8"
+        style={{width: 600, height: 400}}
+        reuseMaps
+      >
+        <Source id="vehicles" type="geojson" data={airplanesGeoJSON}>
+          <Layer
+            type="symbol"
+            layout={{
+              "icon-image": "airplane-icon",
+              "icon-size": 0.3,
+              "icon-rotate": ["get", "rotation"]
+            }}
+          />
+        </Source>
+      </Map>
     </>
   )
 }

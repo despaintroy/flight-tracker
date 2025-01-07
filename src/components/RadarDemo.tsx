@@ -2,12 +2,12 @@
 
 import * as React from "react"
 import {FC, useCallback, useEffect, useMemo, useRef, useState} from "react"
-import {Button} from "@mui/joy"
 import {getAirplanes} from "@/services/adsb"
 import {AircraftData} from "@/services/adsbTypes"
 import Map, {Layer, MapRef, Source, ViewState} from "react-map-gl"
 import {MapEvent} from "mapbox-gl"
 import {distance, point} from "@turf/turf"
+import {GeoJSON} from "geojson"
 
 const SLC_COORDS = {
   lat: 40.7903,
@@ -26,7 +26,7 @@ type PartialViewState = Omit<ViewState, "padding">
 
 const RadarDemo: FC = () => {
   const [airplanes, setAirplanes] = useState<AircraftData[] | null>(null)
-  const [doFetch, setDoFetch] = useState(false)
+  const [windowVisible, setWindowVisible] = useState(false)
   const [viewState, setViewState] = useState<PartialViewState>({
     longitude: COORDS.lon,
     latitude: COORDS.lat,
@@ -35,6 +35,15 @@ const RadarDemo: FC = () => {
     pitch: 0
   })
   const mapRef = useRef<MapRef>(null)
+
+  useEffect(() => {
+    const handleVisibilityChange = () => setWindowVisible(!document.hidden)
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [])
 
   const updateAirplanes = useCallback(async () => {
     const bounds = mapRef.current?.getBounds()
@@ -57,25 +66,25 @@ const RadarDemo: FC = () => {
   }, [viewState.latitude, viewState.longitude])
 
   useEffect(() => {
-    if (doFetch) {
-      const interval = setInterval(updateAirplanes, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [doFetch, updateAirplanes])
+    const interval = setInterval(updateAirplanes, 1000)
+    return () => clearInterval(interval)
+  }, [updateAirplanes])
 
   const onLoadMap = useCallback((e: MapEvent) => {
     const map = e.target
 
     map.loadImage("airplane.png", (error, image) => {
       if (error || !image) throw error
-      map.addImage("airplane-icon", image, {sdf: true})
+      if (!map.hasImage("airplane-icon"))
+        map.addImage("airplane-icon", image, {sdf: true})
     })
   }, [])
 
-  const airplanesGeoJSON = useMemo(() => {
+  const airplanesGeoJSON = useMemo<GeoJSON>(() => {
     return {
       type: "FeatureCollection",
       features: (airplanes ?? []).map((airplane) => ({
+        id: airplane.hex,
         type: "Feature",
         geometry: {
           type: "Point",
@@ -90,10 +99,6 @@ const RadarDemo: FC = () => {
 
   return (
     <>
-      <Button onClick={() => setDoFetch((prev) => !prev)}>
-        {doFetch ? "FETCHING..." : "START FETCHING"}
-      </Button>
-
       <Map
         {...viewState}
         ref={mapRef}
@@ -101,8 +106,9 @@ const RadarDemo: FC = () => {
         onMove={(e) => setViewState(e.viewState)}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         mapStyle="mapbox://styles/despaintroy/cm5l6ikr5000501sv8n0s9jz8"
-        style={{width: 600, height: 400}}
+        style={{width: "100%", height: "100vh"}}
         reuseMaps
+        fadeDuration={0}
       >
         <Source id="airplanes" type="geojson" data={airplanesGeoJSON}>
           <Layer
@@ -110,7 +116,11 @@ const RadarDemo: FC = () => {
             layout={{
               "icon-image": "airplane-icon",
               "icon-size": 0.3,
-              "icon-rotate": ["get", "rotation"]
+              "icon-rotate": ["get", "rotation"],
+              "icon-allow-overlap": true
+            }}
+            paint={{
+              "icon-color": "#00c3f3"
             }}
           />
         </Source>

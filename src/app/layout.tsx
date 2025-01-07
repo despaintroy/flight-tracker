@@ -19,11 +19,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
       <body>
         <ThemeRegistry>
-          <ToastProvider>
-            {/*<MainLayout>*/}
-            {children}
-            {/*</MainLayout>*/}
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </ThemeRegistry>
       </body>
     </html>

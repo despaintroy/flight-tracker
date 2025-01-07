@@ -11,7 +11,8 @@ type FetchAirplanesParams = {
 export const getAirplanes = async (
   params: FetchAirplanesParams
 ): Promise<ADSBEndpointResponse> => {
-  const {lat, lon, radius} = params
+  const {lat, lon} = params
+  const radius = Math.min(params.radius, 250)
   const response = await axios.get<ADSBEndpointResponse>(
     `https://api.airplanes.live/v2/point/${lat}/${lon}/${radius}`
   )

@@ -8,6 +8,7 @@ import Map, {Layer, MapRef, Source, ViewState} from "react-map-gl"
 import {MapEvent} from "mapbox-gl"
 import {distance, point} from "@turf/turf"
 import {GeoJSON} from "geojson"
+import Slideover from "@/components/Slideover"
 
 const SLC_COORDS = {
   lat: 40.7903,
@@ -82,6 +83,8 @@ const RadarDemo: FC = () => {
         map.addImage("airplane-icon", image, {sdf: true})
     })
 
+    map.on("click", () => setSelectedHex(null))
+
     map.on("click", "airplanes-layer", (e) => {
       const hex = e.features?.[0]?.properties?.hex as string
       setSelectedHex(hex ?? null)
@@ -95,10 +98,6 @@ const RadarDemo: FC = () => {
       map.getCanvas().style.cursor = ""
     })
   }, [])
-
-  useEffect(() => {
-    console.log(airplanes?.find((airplane) => airplane.hex === selectedHex))
-  }, [selectedHex])
 
   const airplanesGeoJSON = useMemo<GeoJSON>(() => {
     return {
@@ -118,8 +117,13 @@ const RadarDemo: FC = () => {
     }
   }, [airplanes])
 
+  const selectedAirplane =
+    airplanes?.find((airplane) => airplane.hex === selectedHex) ?? null
+
   return (
     <>
+      <Slideover airplane={selectedAirplane} />
+
       <Map
         {...viewState}
         ref={mapRef}
@@ -127,7 +131,7 @@ const RadarDemo: FC = () => {
         onMove={(e) => setViewState(e.viewState)}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         mapStyle="mapbox://styles/despaintroy/cm5l6ikr5000501sv8n0s9jz8"
-        style={{width: "100%", height: "100vh"}}
+        style={{width: "100%", height: "100vh", position: "unset"}}
         reuseMaps
         fadeDuration={0}
       >

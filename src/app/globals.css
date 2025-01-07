@@ -11,3 +11,7 @@
 .firebase-emulator-warning {
   display: none;
 }
+
+.mapboxgl-ctrl-attrib {
+  display: none;
+}

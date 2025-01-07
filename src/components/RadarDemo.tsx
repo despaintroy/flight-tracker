@@ -26,7 +26,8 @@ type PartialViewState = Omit<ViewState, "padding">
 
 const RadarDemo: FC = () => {
   const [airplanes, setAirplanes] = useState<AircraftData[] | null>(null)
-  const [windowVisible, setWindowVisible] = useState(false)
+  const [selectedHex, setSelectedHex] = useState<string | null>(null)
+  const [windowVisible, setWindowVisible] = useState(true)
   const [viewState, setViewState] = useState<PartialViewState>({
     longitude: COORDS.lon,
     latitude: COORDS.lat,
@@ -61,14 +62,16 @@ const RadarDemo: FC = () => {
       lon: viewState.longitude,
       radius: diagonal / 2
     })
-    console.log(response)
+
     setAirplanes(response.ac)
   }, [viewState.latitude, viewState.longitude])
 
   useEffect(() => {
+    if (!windowVisible) return
+
     const interval = setInterval(updateAirplanes, 1000)
     return () => clearInterval(interval)
-  }, [updateAirplanes])
+  }, [updateAirplanes, windowVisible])
 
   const onLoadMap = useCallback((e: MapEvent) => {
     const map = e.target
@@ -78,7 +81,24 @@ const RadarDemo: FC = () => {
       if (!map.hasImage("airplane-icon"))
         map.addImage("airplane-icon", image, {sdf: true})
     })
+
+    map.on("click", "airplanes-layer", (e) => {
+      const hex = e.features?.[0]?.properties?.hex as string
+      setSelectedHex(hex ?? null)
+    })
+
+    map.on("mouseenter", "airplanes-layer", () => {
+      map.getCanvas().style.cursor = "pointer"
+    })
+
+    map.on("mouseleave", "airplanes-layer", () => {
+      map.getCanvas().style.cursor = ""
+    })
   }, [])
+
+  useEffect(() => {
+    console.log(airplanes?.find((airplane) => airplane.hex === selectedHex))
+  }, [selectedHex])
 
   const airplanesGeoJSON = useMemo<GeoJSON>(() => {
     return {
@@ -91,7 +111,8 @@ const RadarDemo: FC = () => {
           coordinates: [airplane.lon, airplane.lat]
         },
         properties: {
-          rotation: airplane.track ?? airplane.true_heading
+          rotation: airplane.track ?? airplane.true_heading,
+          hex: airplane.hex
         }
       }))
     }
@@ -110,8 +131,9 @@ const RadarDemo: FC = () => {
         reuseMaps
         fadeDuration={0}
       >
-        <Source id="airplanes" type="geojson" data={airplanesGeoJSON}>
+        <Source id="airplanes-source" type="geojson" data={airplanesGeoJSON}>
           <Layer
+            id="airplanes-layer"
             type="symbol"
             layout={{
               "icon-image": "airplane-icon",
@@ -120,7 +142,12 @@ const RadarDemo: FC = () => {
               "icon-allow-overlap": true
             }}
             paint={{
-              "icon-color": "#00c3f3"
+              "icon-color": [
+                "case",
+                ["==", ["get", "hex"], selectedHex],
+                "#00bbff",
+                "#aaaaaa"
+              ]
             }}
           />
         </Source>

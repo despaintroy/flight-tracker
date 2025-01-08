@@ -100,11 +100,15 @@ const RadarDemo: FC = () => {
   }, [aircraftWithHistories])
 
   const aircraftHistoriesGeoJSON = useMemo<GeoJSON>(() => {
+    const limit = Date.now() - 30_000 // 30 seconds ago
+
     return {
       type: "FeatureCollection",
       features: aircraftWithHistories.map(({aircraft, history}) => {
         const limitedHistory =
-          aircraft.hex === selectedHex ? history : history.slice(-30)
+          aircraft.hex === selectedHex
+            ? history
+            : history.filter(({time}) => time > limit)
 
         return {
           id: aircraft.hex,

@@ -55,7 +55,7 @@ const useADSBHistory = (
           lat,
           lon,
           alt_baro: data.alt_baro,
-          time: now - seen
+          time: now - seen * 1000
         })
 
         newMap.set(hex, {

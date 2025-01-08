@@ -357,7 +357,7 @@ export type ADSBEndpointResponse = {
    */
   msg: string
   /**
-   * The time this file was generated, in seconds since Jan 1 1970 00:00:00 GMT.
+   * The time this file was generated, in milliseconds since Jan 1 1970 00:00:00 GMT.
    */
   now: number
   /**
@@ -365,7 +365,7 @@ export type ADSBEndpointResponse = {
    */
   total: number
   /**
-   * The time this file was cached, in seconds since Jan 1 1970 00:00:00 GMT.
+   * The time this file was cached, in milliseconds since Jan 1 1970 00:00:00 GMT.
    */
   ctime: number
   /**

@@ -1,14 +1,13 @@
 "use client"
 
 import * as React from "react"
-import {FC, useCallback, useEffect, useMemo, useRef, useState} from "react"
-import {getAirplanes} from "@/services/adsb"
-import {AircraftData} from "@/services/adsbTypes"
+import {FC, useCallback, useMemo, useRef, useState} from "react"
 import Map, {Layer, MapRef, Source, ViewState} from "react-map-gl"
 import {MapEvent} from "mapbox-gl"
 import {distance, point} from "@turf/turf"
 import {GeoJSON} from "geojson"
 import Slideover from "@/components/Slideover"
+import useADSBHistory from "@/lib/hooks/useADSBHistory"
 
 const SLC_COORDS = {
   lat: 40.7903,
@@ -26,9 +25,8 @@ const DEFAULT_ZOOM = 10
 type PartialViewState = Omit<ViewState, "padding">
 
 const RadarDemo: FC = () => {
-  const [airplanes, setAirplanes] = useState<AircraftData[] | null>(null)
   const [selectedHex, setSelectedHex] = useState<string | null>(null)
-  const [windowVisible, setWindowVisible] = useState(true)
+
   const [viewState, setViewState] = useState<PartialViewState>({
     longitude: COORDS.lon,
     latitude: COORDS.lat,
@@ -38,18 +36,9 @@ const RadarDemo: FC = () => {
   })
   const mapRef = useRef<MapRef>(null)
 
-  useEffect(() => {
-    const handleVisibilityChange = () => setWindowVisible(!document.hidden)
-
-    document.addEventListener("visibilitychange", handleVisibilityChange)
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [])
-
-  const updateAirplanes = useCallback(async () => {
+  const getRadius = useCallback(() => {
     const bounds = mapRef.current?.getBounds()
-    if (!bounds) return
+    if (!bounds) return 0
 
     const {_sw, _ne} = bounds
     const diagonal = distance(
@@ -58,21 +47,14 @@ const RadarDemo: FC = () => {
       {units: "nauticalmiles"}
     )
 
-    const response = await getAirplanes({
-      lat: viewState.latitude,
-      lon: viewState.longitude,
-      radius: diagonal / 2
-    })
+    return diagonal / 2
+  }, [])
 
-    setAirplanes(response.ac)
-  }, [viewState.latitude, viewState.longitude])
-
-  useEffect(() => {
-    if (!windowVisible) return
-
-    const interval = setInterval(updateAirplanes, 1000)
-    return () => clearInterval(interval)
-  }, [updateAirplanes, windowVisible])
+  const aircraftWithHistories = useADSBHistory({
+    lat: viewState.latitude,
+    lon: viewState.longitude,
+    radius: getRadius
+  })
 
   const onLoadMap = useCallback((e: MapEvent) => {
     const map = e.target
@@ -102,27 +84,50 @@ const RadarDemo: FC = () => {
   const airplanesGeoJSON = useMemo<GeoJSON>(() => {
     return {
       type: "FeatureCollection",
-      features: (airplanes ?? []).map((airplane) => ({
-        id: airplane.hex,
+      features: aircraftWithHistories.map(({aircraft}) => ({
+        id: aircraft.hex,
         type: "Feature",
         geometry: {
           type: "Point",
-          coordinates: [airplane.lon, airplane.lat]
+          coordinates: [aircraft.lon, aircraft.lat]
         },
         properties: {
-          rotation: airplane.track ?? airplane.true_heading,
-          hex: airplane.hex
+          rotation: aircraft.track ?? aircraft.true_heading,
+          hex: aircraft.hex
         }
       }))
     }
-  }, [airplanes])
+  }, [aircraftWithHistories])
 
-  const selectedAirplane =
-    airplanes?.find((airplane) => airplane.hex === selectedHex) ?? null
+  const aircraftHistoriesGeoJSON = useMemo<GeoJSON>(() => {
+    return {
+      type: "FeatureCollection",
+      features: aircraftWithHistories.map(({aircraft, history}) => {
+        const limitedHistory =
+          aircraft.hex === selectedHex ? history : history.slice(-30)
+
+        return {
+          id: aircraft.hex,
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: limitedHistory.map(({lon, lat}) => [lon, lat])
+          },
+          properties: {
+            hex: aircraft.hex
+          }
+        }
+      })
+    }
+  }, [aircraftWithHistories, selectedHex])
+
+  const selectedAircraft =
+    aircraftWithHistories?.find(({aircraft}) => aircraft.hex === selectedHex)
+      ?.aircraft ?? null
 
   return (
     <>
-      <Slideover airplane={selectedAirplane} />
+      <Slideover airplane={selectedAircraft} />
 
       <Map
         {...viewState}
@@ -152,6 +157,26 @@ const RadarDemo: FC = () => {
                 "#00bbff",
                 "#aaaaaa"
               ]
+            }}
+          />
+        </Source>
+
+        <Source
+          id="aircraft-histories-source"
+          type="geojson"
+          data={aircraftHistoriesGeoJSON}
+        >
+          <Layer
+            id="aircraft-histories-layer"
+            type="line"
+            paint={{
+              "line-color": [
+                "case",
+                ["==", ["get", "hex"], selectedHex],
+                "#00bbff",
+                "#aaaaaa"
+              ],
+              "line-width": ["case", ["==", ["get", "hex"], selectedHex], 2, 1]
             }}
           />
         </Source>

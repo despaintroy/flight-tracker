@@ -3,6 +3,7 @@ import * as React from "react"
 import ThemeRegistry from "@/components/ThemeRegistry/ThemeRegistry"
 import {Metadata} from "next"
 import {ToastProvider} from "@/lib/providers/ToastContext"
+import {AircraftHistoryProvider} from "@/lib/providers/AircraftHistoryContext"
 
 export const metadata: Metadata = {
   title: "Flight Tracker",
@@ -19,7 +20,9 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
       <body>
         <ThemeRegistry>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <AircraftHistoryProvider>{children}</AircraftHistoryProvider>
+          </ToastProvider>
         </ThemeRegistry>
       </body>
     </html>

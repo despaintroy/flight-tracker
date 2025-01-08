@@ -1,7 +1,7 @@
 import axios from "axios"
 import {ADSBEndpointResponse} from "@/services/adsbTypes"
 
-type FetchAirplanesParams = {
+export type FetchAirplanesParams = {
   lat: number
   lon: number
   /** Radius in nautical miles */

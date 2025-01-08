@@ -131,7 +131,7 @@ const RadarDemo: FC = () => {
 
   return (
     <>
-      <Slideover airplane={selectedAircraft} />
+      <Slideover aircraft={selectedAircraft} />
 
       <Map
         {...viewState}

@@ -1,4 +1,4 @@
-import {FetchAirplanesParams, getAirplanes} from "@/services/adsb"
+import {FetchAircraftParams, getAircraft} from "@/services/adsb"
 import {
   useCallback,
   useContext,
@@ -12,7 +12,7 @@ import {
   AircraftWithHistory
 } from "@/lib/providers/AircraftHistoryContext"
 
-type UseADSBHistoryParams = Omit<FetchAirplanesParams, "radius"> & {
+type UseADSBHistoryParams = Omit<FetchAircraftParams, "radius"> & {
   radius: number | (() => number)
 }
 
@@ -34,9 +34,9 @@ const useADSBHistory = (
     }
   }, [])
 
-  const updateAirplanes = useCallback(async () => {
+  const updateAircraft = useCallback(async () => {
     const calculatedRadius = typeof radius === "function" ? radius() : radius
-    const {ac: aircraft, now} = await getAirplanes({
+    const {ac: aircraft, now} = await getAircraft({
       lat,
       lon,
       radius: calculatedRadius
@@ -71,9 +71,9 @@ const useADSBHistory = (
   useEffect(() => {
     if (!windowVisible) return
 
-    const interval = setInterval(updateAirplanes, 1000)
+    const interval = setInterval(updateAircraft, 1000)
     return () => clearInterval(interval)
-  }, [updateAirplanes, windowVisible])
+  }, [updateAircraft, windowVisible])
 
   return useMemo(() => {
     return activeHexesRef.current.reduce<AircraftWithHistory[]>((acc, hex) => {

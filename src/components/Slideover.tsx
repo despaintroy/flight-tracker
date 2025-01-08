@@ -9,31 +9,31 @@ import {Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
 
 type SlideoverProps = {
-  airplane: AircraftData | null
+  aircraft: AircraftData | null
 }
 
 const Slideover: FC<SlideoverProps> = (props) => {
-  const {airplane} = props
+  const {aircraft} = props
   const [images, setImages] = useState<PhotosResponse | null>(null)
   const [flightRoute, setFlightRoute] = useState<FlightRoute | null>(null)
 
   useEffect(() => {
     setImages(null)
-    if (!airplane?.hex) return
+    if (!aircraft?.hex) return
 
-    getPhotos({hex: airplane.hex}).then(setImages).catch(console.error)
-  }, [airplane?.hex])
+    getPhotos({hex: aircraft.hex}).then(setImages).catch(console.error)
+  }, [aircraft?.hex])
 
   useEffect(() => {
     setFlightRoute(null)
-    if (!airplane?.flight) return
+    if (!aircraft?.flight) return
 
-    getFlightRoute({callsign: airplane.flight})
+    getFlightRoute({callsign: aircraft.flight})
       .then(setFlightRoute)
       .catch(console.error)
-  }, [airplane?.flight])
+  }, [aircraft?.flight])
 
-  if (!airplane) return null
+  if (!aircraft) return null
 
   return (
     <Sheet
@@ -63,29 +63,29 @@ const Slideover: FC<SlideoverProps> = (props) => {
       </AspectRatio>
 
       <Typography level="body-xs">
-        {[airplane.flight, flightRoute?.airline?.name ?? airplane.ownOp]
+        {[aircraft.flight?.trim(), flightRoute?.airline?.name ?? aircraft.ownOp]
           .filter(Boolean)
           .join(" – ") || "No operator information"}
       </Typography>
       <Typography level="title-lg">
-        {airplane.desc ?? airplane.t ?? "Unknown aircraft"}
+        {aircraft.desc ?? aircraft.t ?? "Unknown aircraft"}
       </Typography>
 
       <Divider sx={{my: 2}} />
 
-      {airplane.alt_baro ? (
+      {aircraft.alt_baro ? (
         <Typography startDecorator={<Landscape fontSize="small" />}>
-          {airplane.alt_baro === "ground"
+          {aircraft.alt_baro === "ground"
             ? "On ground"
-            : `${airplane.alt_baro} ft`}
+            : `${aircraft.alt_baro} ft`}
 
-          {airplane.baro_rate ? ` (${airplane.baro_rate} fpm)` : null}
+          {aircraft.baro_rate ? ` (${aircraft.baro_rate} fpm)` : null}
         </Typography>
       ) : null}
 
-      {airplane.gs ? (
+      {aircraft.gs ? (
         <Typography startDecorator={<Speed fontSize="small" />}>
-          {`${Math.round(knotsToMph(airplane.gs))} mph`}
+          {`${Math.round(knotsToMph(aircraft.gs))} mph`}
         </Typography>
       ) : null}
     </Sheet>

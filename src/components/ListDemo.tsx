@@ -13,7 +13,7 @@ import {
   Stack,
   Typography
 } from "@mui/joy"
-import {getAirplanes} from "@/services/adsb"
+import {getAircraft} from "@/services/adsb"
 import {AircraftData} from "@/services/adsbTypes"
 import {PhotosResponse} from "@/services/photosTypes"
 import {getPhotos} from "@/services/photos"
@@ -41,11 +41,11 @@ const _JFK_COORDS = {
 const COORDS = _JFK_COORDS
 const FETCH_RADIUS = 10
 
-type AirplaneCardProps = {
-  airplane: AircraftData
+type AircraftCardProps = {
+  aircraft: AircraftData
 }
 
-const AirplaneCard: FC<AirplaneCardProps> = ({airplane}) => {
+const AircraftCard: FC<AircraftCardProps> = ({aircraft}) => {
   const [images, setImages] = useState<PhotosResponse | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const elementRef = useRef<HTMLDivElement>(null)
@@ -75,11 +75,11 @@ const AirplaneCard: FC<AirplaneCardProps> = ({airplane}) => {
   useEffect(() => {
     if (!isVisible) return
 
-    getPhotos({hex: airplane.hex}).then(setImages).catch(console.error)
-  }, [airplane.hex, isVisible])
+    getPhotos({hex: aircraft.hex}).then(setImages).catch(console.error)
+  }, [aircraft.hex, isVisible])
 
   return (
-    <Card onClick={() => console.log(airplane)} ref={elementRef}>
+    <Card onClick={() => console.log(aircraft)} ref={elementRef}>
       <CardOverflow>
         <AspectRatio sx={{minWidth: 200}}>
           {images === null ? (
@@ -101,17 +101,17 @@ const AirplaneCard: FC<AirplaneCardProps> = ({airplane}) => {
           alignItems="flex-start"
         >
           <Typography level="body-xs">
-            {[airplane.flight, airplane.ownOp].filter(Boolean).join(" – ") ||
+            {[aircraft.flight, aircraft.ownOp].filter(Boolean).join(" – ") ||
               "No operator information"}
           </Typography>
-          {airplane.alt_baro === "ground" ? (
+          {aircraft.alt_baro === "ground" ? (
             <Chip component="span" size="sm" variant="solid" color="neutral">
               On ground
             </Chip>
           ) : null}
         </Stack>
         <Typography level="title-lg">
-          {airplane.desc ?? airplane.t ?? "Unknown aircraft"}
+          {aircraft.desc ?? aircraft.t ?? "Unknown aircraft"}
         </Typography>
       </CardContent>
     </Card>
@@ -119,21 +119,21 @@ const AirplaneCard: FC<AirplaneCardProps> = ({airplane}) => {
 }
 
 const ListDemo: FC = () => {
-  const [airplanes, setAirplanes] = useState<AircraftData[] | null>(null)
+  const [aircrafts, setAircrafts] = useState<AircraftData[] | null>(null)
 
-  const updateAirplanes = async () => {
-    const response = await getAirplanes({
+  const updateAircraft = async () => {
+    const response = await getAircraft({
       lat: COORDS.lat,
       lon: COORDS.lon,
       radius: FETCH_RADIUS
     })
     console.log(response)
-    setAirplanes(response.ac)
+    setAircrafts(response.ac)
   }
 
   return (
     <>
-      <Button onClick={updateAirplanes}>Update Airplanes</Button>
+      <Button onClick={updateAircraft}>Update Aircraft</Button>
 
       <Box
         sx={{
@@ -143,8 +143,8 @@ const ListDemo: FC = () => {
           gap: 2
         }}
       >
-        {airplanes?.map((airplane) => (
-          <AirplaneCard key={airplane.hex} airplane={airplane} />
+        {aircrafts?.map((aircraft) => (
+          <AircraftCard key={aircraft.hex} aircraft={aircraft} />
         ))}
       </Box>
     </>

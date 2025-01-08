@@ -1,15 +1,15 @@
 import axios from "axios"
 import {ADSBEndpointResponse} from "@/services/adsbTypes"
 
-export type FetchAirplanesParams = {
+export type FetchAircraftParams = {
   lat: number
   lon: number
   /** Radius in nautical miles */
   radius: number
 }
 
-export const getAirplanes = async (
-  params: FetchAirplanesParams
+export const getAircraft = async (
+  params: FetchAircraftParams
 ): Promise<ADSBEndpointResponse> => {
   const {lat, lon} = params
   const radius = Math.min(params.radius, 250)

@@ -13,7 +13,7 @@ export type HistoryItem = {
   lat: number
   lon: number
   alt_baro?: number | "ground"
-  /** Seconds since Jan 1, 1970 */
+  /** Milliseconds since Jan 1, 1970 */
   time: number
 }
 

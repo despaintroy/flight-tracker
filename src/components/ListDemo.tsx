@@ -18,7 +18,7 @@ import {AircraftData} from "@/services/adsbTypes"
 import {PhotosResponse} from "@/services/photosTypes"
 import {getPhotos} from "@/services/photos"
 
-const SLC_COORDS = {
+const _SLC_COORDS = {
   lat: 40.7903,
   lon: -111.9771
 }
@@ -28,8 +28,18 @@ const _LOGAN_COORDS = {
   lon: -111.8338
 }
 
-const COORDS = SLC_COORDS
-const FETCH_RADIUS = 5
+const _SFO_COORDS = {
+  lat: 37.6191,
+  lon: -122.3816
+}
+
+const _JFK_COORDS = {
+  lat: 40.6413,
+  lon: -73.7781
+}
+
+const COORDS = _JFK_COORDS
+const FETCH_RADIUS = 10
 
 type AirplaneCardProps = {
   airplane: AircraftData
@@ -84,7 +94,12 @@ const AirplaneCard: FC<AirplaneCardProps> = ({airplane}) => {
         </AspectRatio>
       </CardOverflow>
       <CardContent>
-        <Stack direction="row" spacing={1} justifyContent="space-between">
+        <Stack
+          direction="row"
+          spacing={1}
+          justifyContent="space-between"
+          alignItems="flex-start"
+        >
           <Typography level="body-xs">
             {[airplane.flight, airplane.ownOp].filter(Boolean).join(" – ") ||
               "No operator information"}
@@ -103,7 +118,7 @@ const AirplaneCard: FC<AirplaneCardProps> = ({airplane}) => {
   )
 }
 
-const RadarDemo: FC = () => {
+const ListDemo: FC = () => {
   const [airplanes, setAirplanes] = useState<AircraftData[] | null>(null)
 
   const updateAirplanes = async () => {
@@ -120,13 +135,20 @@ const RadarDemo: FC = () => {
     <>
       <Button onClick={updateAirplanes}>Update Airplanes</Button>
 
-      <Stack spacing={1} sx={{maxWidth: 400, mt: 2}}>
+      <Box
+        sx={{
+          my: 2,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: 2
+        }}
+      >
         {airplanes?.map((airplane) => (
           <AirplaneCard key={airplane.hex} airplane={airplane} />
         ))}
-      </Stack>
+      </Box>
     </>
   )
 }
 
-export default RadarDemo
+export default ListDemo

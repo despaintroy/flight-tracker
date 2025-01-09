@@ -5,6 +5,8 @@ import {Metadata} from "next"
 import {ToastProvider} from "@/lib/providers/ToastContext"
 import {AircraftHistoryProvider} from "@/lib/providers/AircraftHistoryContext"
 
+import "mapbox-gl/dist/mapbox-gl.css"
+
 export const metadata: Metadata = {
   title: "Flight Tracker",
   authors: {name: "Troy DeSpain"},

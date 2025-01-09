@@ -65,6 +65,12 @@ const RadarDemo: FC = () => {
         map.addImage("airplane-icon", image, {sdf: true})
     })
 
+    map.loadImage("square.png", (error, image) => {
+      if (error || !image) throw error
+      if (!map.hasImage("square-icon"))
+        map.addImage("square-icon", image, {sdf: true})
+    })
+
     map.on("click", () => setSelectedHex(null))
 
     map.on("click", "airplanes-layer", (e) => {
@@ -93,7 +99,8 @@ const RadarDemo: FC = () => {
         },
         properties: {
           rotation: aircraft.track ?? aircraft.true_heading,
-          hex: aircraft.hex
+          hex: aircraft.hex,
+          icon: aircraft.hex.startsWith("~") ? "square-icon" : "airplane-icon"
         }
       }))
     }
@@ -149,8 +156,13 @@ const RadarDemo: FC = () => {
             id="airplanes-layer"
             type="symbol"
             layout={{
-              "icon-image": "airplane-icon",
-              "icon-size": 0.3,
+              "icon-image": ["get", "icon"],
+              "icon-size": [
+                "case",
+                ["==", ["get", "icon"], "square-icon"],
+                0.15,
+                0.3
+              ],
               "icon-rotate": ["get", "rotation"],
               "icon-allow-overlap": true
             }}

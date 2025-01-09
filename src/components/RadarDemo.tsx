@@ -138,8 +138,6 @@ const RadarDemo: FC = () => {
 
   return (
     <>
-      <Slideover aircraft={selectedAircraft} />
-
       <Map
         {...viewState}
         ref={mapRef}
@@ -147,7 +145,7 @@ const RadarDemo: FC = () => {
         onMove={(e) => setViewState(e.viewState)}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         mapStyle="mapbox://styles/despaintroy/cm5l6ikr5000501sv8n0s9jz8"
-        style={{width: "100%", height: "100vh", position: "unset"}}
+        style={{width: "100%", height: "100vh"}}
         reuseMaps
         fadeDuration={0}
       >
@@ -197,6 +195,8 @@ const RadarDemo: FC = () => {
           />
         </Source>
       </Map>
+
+      <Slideover aircraft={selectedAircraft} />
     </>
   )
 }

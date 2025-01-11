@@ -26,12 +26,6 @@ const coordinateSchema = z
   })
   .nullable()
 
-const getStoredMapCenter = () => {
-  const stored = localStorage.getItem(MAP_CENTER_STORAGE_KEY)
-  if (!stored) return null
-  return coordinateSchema.catch(null).parse(safeJSONParse(stored))
-}
-
 export type AircraftWithHistory = {
   aircraft: AircraftData
   history: HistoryItem[]
@@ -60,12 +54,18 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const [windowVisible, setWindowVisible] = useState(true)
   const [fetchRadius, setFetchRadius] = useState(DEFAULT_RADIUS_NM)
   const [activeHexes, setActiveHexes] = useState<string[]>([])
-  const [mapCenter, setMapCenter] = useState<Coordinate | null>(
-    getStoredMapCenter()
-  )
+  const [mapCenter, setMapCenter] = useState<Coordinate | null>(null)
   const [aircraftMap, setAircraftMap] = useState<AircraftWithHistoryMap>(
     new Map()
   )
+
+  // Initialize map center from local storage
+  useEffect(() => {
+    const stored = localStorage.getItem(MAP_CENTER_STORAGE_KEY)
+    if (!stored) return
+    const parsed = coordinateSchema.catch(null).parse(safeJSONParse(stored))
+    setMapCenter(parsed)
+  }, [])
 
   useDebounce(
     mapCenter,

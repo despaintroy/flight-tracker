@@ -1,9 +1,8 @@
 "use client"
 
 import * as React from "react"
-import {FC, useCallback, useRef, useState} from "react"
+import {FC, useRef, useState} from "react"
 import Map, {MapRef, ViewState} from "react-map-gl"
-import {distance, point} from "@turf/turf"
 import DetailsPopover from "@/components/DetailsPopover"
 import useADSBHistory from "@/lib/hooks/useADSBHistory"
 import AircraftLayers from "@/components/MainMap/layers/AircraftLayers"
@@ -28,24 +27,9 @@ const MainMap: FC = () => {
     pitch: 0
   })
 
-  const getRadius = useCallback(() => {
-    const bounds = mapRef.current?.getBounds()
-    if (!bounds) return 0
-
-    const {_sw, _ne} = bounds
-    const diagonal = distance(
-      point([_sw.lng, _sw.lat]),
-      point([_ne.lng, _ne.lat]),
-      {units: "nauticalmiles"}
-    )
-
-    return diagonal / 2
-  }, [])
-
   const aircraftWithHistories = useADSBHistory({
     lat: viewState.latitude,
-    lon: viewState.longitude,
-    radius: getRadius
+    lon: viewState.longitude
   })
 
   const selectedAircraft =

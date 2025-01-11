@@ -4,13 +4,9 @@ import {FC, useEffect} from "react"
 import {useColorScheme} from "@mui/joy"
 
 const ColorScheme: FC = () => {
-  const {mode, setMode, systemMode} = useColorScheme()
+  const {setMode} = useColorScheme()
 
-  console.log({mode, systemMode})
-
-  useEffect(() => {
-    setMode("system")
-  }, [setMode])
+  useEffect(() => setMode("dark"), [setMode])
 
   return null
 }

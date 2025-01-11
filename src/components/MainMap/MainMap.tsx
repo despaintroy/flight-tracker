@@ -4,7 +4,7 @@ import * as React from "react"
 import {FC, useCallback, useRef, useState} from "react"
 import Map, {MapRef, ViewState} from "react-map-gl"
 import {distance, point} from "@turf/turf"
-import Slideover from "@/components/Slideover"
+import DetailsPopover from "@/components/DetailsPopover"
 import useADSBHistory from "@/lib/hooks/useADSBHistory"
 import AircraftLayers from "@/components/MainMap/layers/AircraftLayers"
 import {useOnLoadMap} from "@/components/MainMap/mainMapHelpers"
@@ -75,7 +75,7 @@ const MainMap: FC = () => {
         />
       </Map>
 
-      <Slideover aircraft={selectedAircraft} />
+      <DetailsPopover aircraft={selectedAircraft} />
     </>
   )
 }

@@ -8,11 +8,11 @@ import {getFlightRoute} from "@/services/flightRoute"
 import {Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
 
-type SlideoverProps = {
+type DetailsPopoverProps = {
   aircraft: AircraftData | null
 }
 
-const Slideover: FC<SlideoverProps> = (props) => {
+const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const {aircraft} = props
   const [images, setImages] = useState<PhotosResponse | null>(null)
   const [flightRoute, setFlightRoute] = useState<FlightRoute | null>(null)
@@ -37,20 +37,21 @@ const Slideover: FC<SlideoverProps> = (props) => {
 
   return (
     <Sheet
-      sx={{
+      sx={(theme) => ({
+        boxShadow: theme.shadow.sm,
         position: "fixed",
-        top: 12,
-        left: 12,
-        width: 400,
+        top: {xs: theme.spacing(1), sm: theme.spacing(2)},
+        left: {xs: theme.spacing(1), sm: theme.spacing(2)},
+        right: {xs: theme.spacing(1), sm: theme.spacing(2)},
+        maxWidth: 400,
+        maxHeight: "45vh",
         bg: "background",
         borderRadius: "md",
         p: 2,
         overflow: "auto"
-      }}
+      })}
     >
-      <AspectRatio
-        sx={{minWidth: 200, borderRadius: 4, overflow: "none", mb: 2}}
-      >
+      <AspectRatio sx={{minWidth: 200, overflow: "none", m: -2, mb: 2}}>
         {images === null ? (
           <Skeleton variant="rectangular" />
         ) : !images?.photos.length ? (
@@ -92,4 +93,4 @@ const Slideover: FC<SlideoverProps> = (props) => {
   )
 }
 
-export default Slideover
+export default DetailsPopover

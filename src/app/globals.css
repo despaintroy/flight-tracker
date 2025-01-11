@@ -8,6 +8,6 @@
     margin: 0;
 }
 
-.firebase-emulator-warning {
+.firebase-emulator-warning, .mapboxgl-ctrl-attrib {
     display: none;
 }

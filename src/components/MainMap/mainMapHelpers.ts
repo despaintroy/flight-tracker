@@ -23,6 +23,12 @@ export const useOnLoadMap = (params: UseOnLoadMapParams) => {
     (e: MapEvent) => {
       const map = e.target
 
+      map.setMaxPitch(0)
+      map.setMinPitch(0)
+      map.touchPitch.disable()
+      map.dragRotate.disable()
+      map.touchZoomRotate.disable()
+
       const icons = {
         [IconIDs.Airplane]: "airplane.png",
         [IconIDs.Square]: "square.png"

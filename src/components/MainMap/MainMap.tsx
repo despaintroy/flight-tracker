@@ -3,12 +3,11 @@
 import * as React from "react"
 import {FC, useCallback, useRef, useState} from "react"
 import Map, {MapRef, ViewState} from "react-map-gl"
-import {MapEvent} from "mapbox-gl"
 import {distance, point} from "@turf/turf"
 import Slideover from "@/components/Slideover"
 import useADSBHistory from "@/lib/hooks/useADSBHistory"
 import AircraftLayers from "@/components/MainMap/layers/AircraftLayers"
-import {IconIDs, LayerIDs} from "@/components/MainMap/mainMapHelpers"
+import {useOnLoadMap} from "@/components/MainMap/mainMapHelpers"
 import {COORDINATES} from "@/lib/constants"
 import AircraftPathsLayer from "@/components/MainMap/layers/AircraftPathsLayer"
 
@@ -17,7 +16,9 @@ const DEFAULT_ZOOM = 10
 type PartialViewState = Omit<ViewState, "padding">
 
 const MainMap: FC = () => {
+  const mapRef = useRef<MapRef>(null)
   const [selectedHex, setSelectedHex] = useState<string | null>(null)
+  const onLoadMap = useOnLoadMap({setSelectedHex})
 
   const [viewState, setViewState] = useState<PartialViewState>({
     longitude: COORDINATES.slc.lon,
@@ -26,7 +27,6 @@ const MainMap: FC = () => {
     bearing: 0,
     pitch: 0
   })
-  const mapRef = useRef<MapRef>(null)
 
   const getRadius = useCallback(() => {
     const bounds = mapRef.current?.getBounds()
@@ -47,41 +47,6 @@ const MainMap: FC = () => {
     lon: viewState.longitude,
     radius: getRadius
   })
-
-  const onLoadMap = useCallback((e: MapEvent) => {
-    const map = e.target
-
-    const icons = {
-      [IconIDs.Airplane]: "airplane.png",
-      [IconIDs.Square]: "square.png"
-    }
-
-    Object.entries(icons).forEach(([id, path]) => {
-      map.loadImage(path, (error, image) => {
-        if (error || !image) throw error
-        if (!map.hasImage(id)) map.addImage(id, image, {sdf: true})
-      })
-    })
-
-    map.on("click", () => setSelectedHex(null))
-
-    const clickableIconLayers = [LayerIDs.AirplaneIcons, LayerIDs.SquareIcons]
-
-    clickableIconLayers.forEach((layer) => {
-      map.on("click", layer, (e) => {
-        const hex = e.features?.[0]?.properties?.hex
-        setSelectedHex(hex ?? null)
-      })
-
-      map.on("mouseenter", layer, () => {
-        map.getCanvas().style.cursor = "pointer"
-      })
-
-      map.on("mouseleave", layer, () => {
-        map.getCanvas().style.cursor = ""
-      })
-    })
-  }, [])
 
   const selectedAircraft =
     aircraftWithHistories?.find(({aircraft}) => aircraft.hex === selectedHex)

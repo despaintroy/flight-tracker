@@ -10,21 +10,9 @@ import {
 import {AircraftData} from "@/services/adsbTypes"
 import {HistoryItem} from "@/services/localAircraftDB"
 import {Coordinate} from "@/lib/constants"
-import useDebounce from "@/lib/hooks/useDebounce"
-import {safeJSONParse} from "@/lib/helpers"
-import {z} from "zod"
 import {getAircraft} from "@/services/adsb"
 
 const DEFAULT_RADIUS_NM = 250
-
-const MAP_CENTER_STORAGE_KEY = "mapCenter"
-
-const coordinateSchema = z
-  .object({
-    lat: z.number(),
-    lon: z.number()
-  })
-  .nullable()
 
 export type AircraftWithHistory = {
   aircraft: AircraftData
@@ -57,22 +45,6 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null)
   const [aircraftMap, setAircraftMap] = useState<AircraftWithHistoryMap>(
     new Map()
-  )
-
-  // Initialize map center from local storage
-  useEffect(() => {
-    const stored = localStorage.getItem(MAP_CENTER_STORAGE_KEY)
-    if (!stored) return
-    const parsed = coordinateSchema.catch(null).parse(safeJSONParse(stored))
-    setMapCenter(parsed)
-  }, [])
-
-  useDebounce(
-    mapCenter,
-    (center) => {
-      localStorage.setItem(MAP_CENTER_STORAGE_KEY, JSON.stringify(center))
-    },
-    1000
   )
 
   useEffect(() => {

@@ -17,28 +17,8 @@ import {getAircraft} from "@/services/adsb"
 import {AircraftData} from "@/services/adsbTypes"
 import {PhotosResponse} from "@/services/photosTypes"
 import {getPhotos} from "@/services/photos"
+import {COORDINATES} from "@/lib/constants"
 
-const _SLC_COORDS = {
-  lat: 40.7903,
-  lon: -111.9771
-}
-
-const _LOGAN_COORDS = {
-  lat: 41.737,
-  lon: -111.8338
-}
-
-const _SFO_COORDS = {
-  lat: 37.6191,
-  lon: -122.3816
-}
-
-const _JFK_COORDS = {
-  lat: 40.6413,
-  lon: -73.7781
-}
-
-const COORDS = _JFK_COORDS
 const FETCH_RADIUS = 10
 
 type AircraftCardProps = {
@@ -123,8 +103,8 @@ const ListDemo: FC = () => {
 
   const updateAircraft = async () => {
     const response = await getAircraft({
-      lat: COORDS.lat,
-      lon: COORDS.lon,
+      lat: COORDINATES.jfk.lat,
+      lon: COORDINATES.jfk.lon,
       radius: FETCH_RADIUS
     })
     console.log(response)

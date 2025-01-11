@@ -1,11 +1,11 @@
-import RadarDemo from "@/components/RadarDemo"
+import MainMap from "@/components/MainMap/MainMap"
 
 // https://airportdb.io
 
 export default function Home() {
   return (
     <>
-      <RadarDemo />
+      <MainMap />
       {/*<ListDemo />*/}
       {/*<3ddemo />*/}
     </>

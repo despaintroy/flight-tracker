@@ -4,8 +4,8 @@ import {z} from "zod"
 import {safeJSONParse} from "@/lib/helpers"
 
 const INDEX_STORAGE_KEY = "localAircraftDBIndex"
-const MAX_HISTORY_MS = 1000 * 60 * 60 * 12 // 12 hours
-const STALE_TIME_MS = 1000 * 60 * 60 * 24 * 7 // 6 hours
+const MAX_HISTORY_MS = 1000 * 60 * 5 // 5 minutes
+const STALE_TIME_MS = 1000 * 60 * 2 // 2 minutes
 
 const makeHexKey = (hex: string) => `hex-history:${hex}`
 
@@ -96,7 +96,7 @@ setInterval(
     const staleTime = Date.now() - STALE_TIME_MS
     clearStaleHistories(staleTime)
   },
-  1000 * 60 * 60 // every hour
+  1000 * 60 // every minute
 )
 
 const LOCAL_AIRCRAFT_DB = {

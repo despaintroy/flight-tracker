@@ -8,11 +8,11 @@ import {
   useState
 } from "react"
 import {AircraftData} from "@/services/adsbTypes"
-import {HistoryItem} from "@/services/localAircraftDB"
+import LOCAL_AIRCRAFT_DB, {HistoryItem} from "@/services/localAircraftDB"
 import {Coordinate} from "@/lib/constants"
 import {getAircraft} from "@/services/adsb"
 
-const DEFAULT_RADIUS_NM = 250
+const DEFAULT_RADIUS_NM = 100
 
 export type AircraftWithHistory = {
   aircraft: AircraftData
@@ -71,19 +71,18 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
       aircraft.forEach((data) => {
         const {hex, lat, lon, seen = 0} = data
-        const newHistory = [...(newMap.get(hex)?.history ?? [])]
 
-        newHistory.push({
+        const history = [...(prev.get(hex)?.history ?? [])]
+        if (!history.length) history.push(...LOCAL_AIRCRAFT_DB.getHistory(hex))
+
+        history.push({
           lat,
           lon,
           alt_baro: data.alt_baro,
           time: now - seen * 1000
         })
 
-        newMap.set(hex, {
-          aircraft: data,
-          history: newHistory
-        })
+        newMap.set(hex, {aircraft: data, history})
       })
 
       return newMap
@@ -96,6 +95,17 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
     const interval = setInterval(updateAircraft, 1000)
     return () => clearInterval(interval)
   }, [updateAircraft, windowVisible])
+
+  useEffect(() => {
+    LOCAL_AIRCRAFT_DB.bulkAddHistoryItems(
+      aircraftMap
+        .entries()
+        .reduce<Record<string, HistoryItem[]>>((acc, [hex, {history}]) => {
+          acc[hex] = history
+          return acc
+        }, {})
+    )
+  }, [aircraftMap])
 
   return (
     <AircraftHistoryContext.Provider

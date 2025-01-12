@@ -10,7 +10,7 @@ const useDebounce = <T>(
       callback(value)
     }, delay)
     return () => clearTimeout(timeout)
-  }, [value, callback, delay])
+  }, [value, delay])
 }
 
 export default useDebounce

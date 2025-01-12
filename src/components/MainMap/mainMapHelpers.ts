@@ -1,5 +1,5 @@
 import {Dispatch, SetStateAction, useCallback} from "react"
-import {MapEvent} from "mapbox-gl"
+import {GeolocateControl, MapEvent} from "mapbox-gl"
 
 export enum LayerIDs {
   AirplaneIcons = "airplane-icons-layer",
@@ -29,6 +29,16 @@ export const useOnLoadMap = (params: UseOnLoadMapParams) => {
       map.dragRotate.disable()
       map.touchPitch.disable()
       map.touchZoomRotate.disableRotation()
+
+      map.addControl(
+        new GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true
+          },
+          trackUserLocation: true,
+          showUserHeading: true
+        })
+      )
 
       const icons = {
         [IconIDs.Airplane]: "airplane.png",

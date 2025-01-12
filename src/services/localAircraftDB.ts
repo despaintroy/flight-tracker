@@ -4,8 +4,6 @@ import {z} from "zod"
 import {safeJSONParse} from "@/lib/helpers"
 
 const INDEX_STORAGE_KEY = "localAircraftDBIndex"
-const MAX_HISTORY_MS = 1000 * 60 * 5 // 5 minutes
-const STALE_TIME_MS = 1000 * 60 * 2 // 2 minutes
 
 const makeHexKey = (hex: string) => `hex-history:${hex}`
 
@@ -53,14 +51,6 @@ const addHistoryItems = (hex: string, newHistoryItems: HistoryItem[]) => {
   const sorted = newHistoryItems.sort((a, b) => a.time - b.time)
   let history = getHistory(hex)
 
-  const currentTime = Date.now()
-  const oldestAllowedTime = currentTime - MAX_HISTORY_MS
-
-  if (history.at(0)?.time ?? currentTime > oldestAllowedTime) {
-    const cutoffIndex = history.findIndex(({time}) => time > oldestAllowedTime)
-    history = history.slice(cutoffIndex)
-  }
-
   const mostRecentStoredTime = history.at(-1)?.time ?? 0
   const sortedCutoffIndex = sorted.findIndex(
     ({time}) => time > mostRecentStoredTime
@@ -76,28 +66,6 @@ const bulkAddHistoryItems = (hexes: Record<string, HistoryItem[]>) => {
     addHistoryItems(hex, historyItems)
   )
 }
-
-const clearStaleHistories = (lastEntryBeforeTime: number) => {
-  const index = getIndex()
-  const hexesToDelete = Object.entries(index)
-    .filter(([, timestamp]) => timestamp < lastEntryBeforeTime)
-    .map(([hex]) => hex)
-
-  hexesToDelete.forEach((hex) => {
-    localStorage.removeItem(makeHexKey(hex))
-    delete index[hex]
-  })
-
-  localStorage.setItem(INDEX_STORAGE_KEY, JSON.stringify(index))
-}
-
-setInterval(
-  () => {
-    const staleTime = Date.now() - STALE_TIME_MS
-    clearStaleHistories(staleTime)
-  },
-  1000 * 60 // every minute
-)
 
 const LOCAL_AIRCRAFT_DB = {
   listHexes,

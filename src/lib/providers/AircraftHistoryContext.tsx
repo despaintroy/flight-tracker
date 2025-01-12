@@ -9,10 +9,11 @@ import {
 } from "react"
 import {AircraftData} from "@/services/adsbTypes"
 import LOCAL_AIRCRAFT_DB, {HistoryItem} from "@/services/localAircraftDB"
-import {Coordinate} from "@/lib/constants"
+import {Coordinate, DEFAULT_FETCH_RADIUS_NM} from "@/lib/constants"
 import {getAircraft} from "@/services/adsb"
+import usePageVisibility from "@/lib/hooks/usePageVisibility"
 
-const DEFAULT_RADIUS_NM = 100
+const AIRCRAFT_MAP_STALE_TIME = 1000 * 60 * 5 // 5 minutes
 
 export type AircraftWithHistory = {
   aircraft: AircraftData
@@ -39,22 +40,12 @@ export const AircraftHistoryContext = createContext<AircraftHistoryContextType>(
 )
 
 export function AircraftHistoryProvider({children}: PropsWithChildren) {
-  const [windowVisible, setWindowVisible] = useState(true)
-  const [fetchRadius, setFetchRadius] = useState(DEFAULT_RADIUS_NM)
+  const [fetchRadius, setFetchRadius] = useState(DEFAULT_FETCH_RADIUS_NM)
   const [activeHexes, setActiveHexes] = useState<string[]>([])
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null)
   const [aircraftMap, setAircraftMap] = useState<AircraftWithHistoryMap>(
     new Map()
   )
-
-  useEffect(() => {
-    const handleVisibilityChange = () => setWindowVisible(!document.hidden)
-
-    document.addEventListener("visibilitychange", handleVisibilityChange)
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [])
 
   const updateAircraft = useCallback(async () => {
     if (!mapCenter) return
@@ -89,24 +80,31 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
     })
   }, [fetchRadius, mapCenter])
 
+  const isPageVisible = usePageVisibility()
   useEffect(() => {
-    if (!windowVisible) return
+    if (!isPageVisible) return
 
     const interval = setInterval(updateAircraft, 1000)
     return () => clearInterval(interval)
-  }, [updateAircraft, windowVisible])
+  }, [updateAircraft, isPageVisible])
 
   useEffect(() => {
-    LOCAL_AIRCRAFT_DB.bulkAddHistoryItems(
-      Array.from(aircraftMap.entries()).reduce<Record<string, HistoryItem[]>>(
-        (acc, [hex, {history}]) => {
-          acc[hex] = history
-          return acc
-        },
-        {}
-      )
-    )
-  }, [aircraftMap])
+    const purgeStaleAircraft = () => {
+      setAircraftMap((prev) => {
+        const staleTime = Date.now() - AIRCRAFT_MAP_STALE_TIME
+        const staleHexes = Array.from(prev.entries())
+          .filter(([, {history}]) => history.at(-1)?.time ?? 0 < staleTime)
+          .map(([hex]) => hex)
+
+        const newMap = new Map(prev)
+        staleHexes.forEach((hex) => newMap.delete(hex))
+        return newMap
+      })
+    }
+
+    const interval = setInterval(purgeStaleAircraft, 1000 * 60) // every minute
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <AircraftHistoryContext.Provider

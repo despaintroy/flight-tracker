@@ -3,6 +3,8 @@ export type Coordinate = {
   lon: number
 }
 
+export const DEFAULT_FETCH_RADIUS_NM = 100
+
 export const COORDINATES = {
   slc: {
     lat: 40.7903,

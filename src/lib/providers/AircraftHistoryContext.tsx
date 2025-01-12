@@ -98,12 +98,13 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
   useEffect(() => {
     LOCAL_AIRCRAFT_DB.bulkAddHistoryItems(
-      aircraftMap
-        .entries()
-        .reduce<Record<string, HistoryItem[]>>((acc, [hex, {history}]) => {
+      Array.from(aircraftMap.entries()).reduce<Record<string, HistoryItem[]>>(
+        (acc, [hex, {history}]) => {
           acc[hex] = history
           return acc
-        }, {})
+        },
+        {}
+      )
     )
   }, [aircraftMap])
 

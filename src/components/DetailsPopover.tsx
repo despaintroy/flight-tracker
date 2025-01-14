@@ -48,7 +48,8 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
         bg: "background",
         borderRadius: "md",
         p: 2,
-        overflow: "auto"
+        overflow: "auto",
+        zIndex: 3
       })}
     >
       <AspectRatio sx={{minWidth: 200, overflow: "none", m: -2, mb: 2}}>

@@ -19,6 +19,11 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <head>
         <link rel="manifest" href="manifest.json" />
         <meta name="theme-color" content="#292929" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+        />
+
         <title>Flight Tracker</title>
 
         <link

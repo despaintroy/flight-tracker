@@ -5,6 +5,7 @@ import {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useRef,
   useState
 } from "react"
 import {AircraftData} from "@/services/adsbTypes"
@@ -43,6 +44,7 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const [fetchRadius, setFetchRadius] = useState(DEFAULT_FETCH_RADIUS_NM)
   const [activeHexes, setActiveHexes] = useState<string[]>([])
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null)
+  const lastPurgeRef = useRef(Date.now())
   const [aircraftMap, setAircraftMap] = useState<AircraftWithHistoryMap>(
     new Map()
   )
@@ -89,22 +91,22 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   }, [updateAircraft, isPageVisible])
 
   useEffect(() => {
-    const purgeStaleAircraft = () => {
-      setAircraftMap((prev) => {
-        const staleTime = Date.now() - AIRCRAFT_MAP_STALE_TIME
-        const staleHexes = Array.from(prev.entries())
-          .filter(([, {history}]) => history.at(-1)?.time ?? 0 < staleTime)
-          .map(([hex]) => hex)
+    const now = Date.now()
 
-        const newMap = new Map(prev)
-        staleHexes.forEach((hex) => newMap.delete(hex))
-        return newMap
-      })
-    }
+    if (lastPurgeRef.current > now - 1000 * 10) return
+    else lastPurgeRef.current = now
 
-    const interval = setInterval(purgeStaleAircraft, 1000 * 60) // every minute
-    return () => clearInterval(interval)
-  }, [])
+    setAircraftMap((prev) => {
+      const staleTime = now - AIRCRAFT_MAP_STALE_TIME
+      const staleHexes = Array.from(prev.entries())
+        .filter(([, {history}]) => (history.at(-1)?.time ?? 0) < staleTime)
+        .map(([hex]) => hex)
+
+      const newMap = new Map(prev)
+      staleHexes.forEach((hex) => newMap.delete(hex))
+      return newMap
+    })
+  }, [aircraftMap])
 
   return (
     <AircraftHistoryContext.Provider

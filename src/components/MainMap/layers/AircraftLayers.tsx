@@ -25,7 +25,7 @@ const AircraftLayers: FC<AircraftLayersProps> = (props) => {
           coordinates: [aircraft.lon, aircraft.lat]
         },
         properties: {
-          rotation: aircraft.track ?? aircraft.true_heading,
+          rotation: aircraft.track ?? aircraft.true_heading ?? 0,
           hex: aircraft.hex,
           icon: aircraft.hex.startsWith("~") ? IconIDs.Square : IconIDs.Airplane
         }

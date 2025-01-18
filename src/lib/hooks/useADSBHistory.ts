@@ -5,12 +5,14 @@ import {
 } from "@/lib/providers/AircraftHistoryContext"
 import {Coordinate} from "@/lib/constants"
 
-type UseADSBHistoryParams = Coordinate
+type UseADSBHistoryParams = {coordinate: Coordinate}
 
 const useADSBHistory = (
   params: UseADSBHistoryParams
 ): AircraftWithHistory[] => {
-  const {lat, lon} = params
+  const {
+    coordinate: {lat, lon}
+  } = params
 
   const {aircraftMap, setMapCenter, activeHexes} = useContext(
     AircraftHistoryContext

@@ -28,8 +28,10 @@ const MainMap: FC = () => {
   })
 
   const aircraftWithHistories = useADSBHistory({
-    lat: viewState.latitude,
-    lon: viewState.longitude
+    coordinate: {
+      lat: viewState.latitude,
+      lon: viewState.longitude
+    }
   })
 
   const selectedAircraft =

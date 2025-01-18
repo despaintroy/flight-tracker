@@ -16,6 +16,17 @@ import usePageVisibility from "@/lib/hooks/usePageVisibility"
 
 const AIRCRAFT_MAP_STALE_TIME = 1000 * 60 * 5 // 5 minutes
 
+type ADSBFetchType =
+  | {type: "radius"}
+  | {type: "mil"}
+  | {type: "ladd"}
+  | {type: "pia"}
+  | {type: "hex"; hex: string}
+  | {type: "callsign"; callsign: string}
+  | {type: "registration"; registration: string}
+  | {type: "type"; aircraftType: string}
+  | {type: "squawk"; squawk: string}
+
 export type AircraftWithHistory = {
   aircraft: AircraftData
   history: HistoryItem[]
@@ -27,24 +38,26 @@ type AircraftWithHistoryMap = Map<string, AircraftWithHistory>
 type AircraftHistoryContextType = {
   aircraftMap: AircraftWithHistoryMap
   setMapCenter: (coordinate: Coordinate) => void
-  setFetchRadius: (radius_nm: number) => void
   activeHexes: string[]
+  fetchType: ADSBFetchType
+  setFetchType: (fetchType: ADSBFetchType) => void
 }
 
 export const AircraftHistoryContext = createContext<AircraftHistoryContextType>(
   {
     aircraftMap: new Map(),
     setMapCenter: () => {},
-    setFetchRadius: () => {},
-    activeHexes: []
+    activeHexes: [],
+    fetchType: {type: "radius"},
+    setFetchType: () => {}
   }
 )
 
 export function AircraftHistoryProvider({children}: PropsWithChildren) {
-  const [fetchRadius, setFetchRadius] = useState(DEFAULT_FETCH_RADIUS_NM)
   const [activeHexes, setActiveHexes] = useState<string[]>([])
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null)
   const lastPurgeRef = useRef(Date.now())
+  const [fetchType, setFetchType] = useState<ADSBFetchType>({type: "radius"})
   const [aircraftMap, setAircraftMap] = useState<AircraftWithHistoryMap>(
     new Map()
   )
@@ -52,9 +65,10 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const updateAircraft = useCallback(async () => {
     if (!mapCenter) return
 
+    // TODO: Use different endpoints based on fetchType
     const {ac: aircraft, now} = await ADSB.getRadius({
       ...mapCenter,
-      radius_nm: fetchRadius
+      radius_nm: DEFAULT_FETCH_RADIUS_NM
     })
 
     setActiveHexes(aircraft.map(({hex}) => hex))
@@ -80,7 +94,7 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
       return newMap
     })
-  }, [fetchRadius, mapCenter])
+  }, [mapCenter])
 
   const isPageVisible = usePageVisibility()
   useEffect(() => {
@@ -110,7 +124,7 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
   return (
     <AircraftHistoryContext.Provider
-      value={{aircraftMap, setMapCenter, setFetchRadius, activeHexes}}
+      value={{aircraftMap, setMapCenter, activeHexes, fetchType, setFetchType}}
     >
       {children}
     </AircraftHistoryContext.Provider>

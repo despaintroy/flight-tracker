@@ -54,7 +54,7 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
     const {ac: aircraft, now} = await ADSB.getRadius({
       ...mapCenter,
-      radius: fetchRadius
+      radius_nm: fetchRadius
     })
 
     setActiveHexes(aircraft.map(({hex}) => hex))

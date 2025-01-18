@@ -65,11 +65,35 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const updateAircraft = useCallback(async () => {
     if (!mapCenter) return
 
-    // TODO: Use different endpoints based on fetchType
-    const {ac: aircraft, now} = await ADSB.getRadius({
-      ...mapCenter,
-      radius_nm: DEFAULT_FETCH_RADIUS_NM
-    })
+    const adsbPromise = (() => {
+      switch (fetchType.type) {
+        case "mil":
+          return ADSB.getMilitary()
+        case "ladd":
+          return ADSB.getLADD()
+        case "pia":
+          return ADSB.getPIA()
+        case "hex":
+          return ADSB.getHex(fetchType.hex)
+        case "callsign":
+          return ADSB.getCallsign(fetchType.callsign)
+        case "registration":
+          return ADSB.getRegistration(fetchType.registration)
+        case "type":
+          return ADSB.getType(fetchType.aircraftType)
+        case "squawk":
+          return ADSB.getSquawk(fetchType.squawk)
+        case "radius":
+          return ADSB.getRadius({
+            ...mapCenter,
+            radius_nm: DEFAULT_FETCH_RADIUS_NM
+          })
+        default:
+          throw new Error(`Unknown fetch type: ${fetchType}`)
+      }
+    })()
+
+    const {ac: aircraft, now} = await adsbPromise
 
     setActiveHexes(aircraft.map(({hex}) => hex))
 

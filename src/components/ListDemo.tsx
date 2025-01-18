@@ -13,11 +13,11 @@ import {
   Stack,
   Typography
 } from "@mui/joy"
-import {getAircraft} from "@/services/adsb"
 import {AircraftData} from "@/services/adsbTypes"
 import {PhotosResponse} from "@/services/photosTypes"
 import {getPhotos} from "@/services/photos"
 import {COORDINATES} from "@/lib/constants"
+import {ADSB} from "@/services/adsb"
 
 const FETCH_RADIUS = 10
 
@@ -102,10 +102,10 @@ const ListDemo: FC = () => {
   const [aircrafts, setAircrafts] = useState<AircraftData[] | null>(null)
 
   const updateAircraft = async () => {
-    const response = await getAircraft({
+    const response = await ADSB.getRadius({
       lat: COORDINATES.jfk.lat,
       lon: COORDINATES.jfk.lon,
-      radius: FETCH_RADIUS
+      radius_nm: FETCH_RADIUS
     })
     console.log(response)
     setAircrafts(response.ac)

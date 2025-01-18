@@ -11,7 +11,7 @@ import {
 import {AircraftData} from "@/services/adsbTypes"
 import LOCAL_AIRCRAFT_DB, {HistoryItem} from "@/services/localAircraftDB"
 import {Coordinate, DEFAULT_FETCH_RADIUS_NM} from "@/lib/constants"
-import {getAircraft} from "@/services/adsb"
+import {ADSB} from "@/services/adsb"
 import usePageVisibility from "@/lib/hooks/usePageVisibility"
 
 const AIRCRAFT_MAP_STALE_TIME = 1000 * 60 * 5 // 5 minutes
@@ -52,7 +52,7 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const updateAircraft = useCallback(async () => {
     if (!mapCenter) return
 
-    const {ac: aircraft, now} = await getAircraft({
+    const {ac: aircraft, now} = await ADSB.getRadius({
       ...mapCenter,
       radius: fetchRadius
     })

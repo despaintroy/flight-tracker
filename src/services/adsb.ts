@@ -22,9 +22,7 @@ export namespace ADSB {
   }
 
   export const getMilitary = async (): Promise<ADSBEndpointResponse> => {
-    const response = await axios.get<ADSBEndpointResponse>(
-      `${BASE_URL}/military`
-    )
+    const response = await axios.get<ADSBEndpointResponse>(`${BASE_URL}/mil`)
     return response.data
   }
 

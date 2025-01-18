@@ -40,6 +40,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       sx={(theme) => ({
         boxShadow: theme.shadow.sm,
         position: "fixed",
+        zIndex: 3,
         top: {xs: theme.spacing(1), sm: theme.spacing(2)},
         left: {xs: theme.spacing(1), sm: theme.spacing(2)},
         right: {xs: theme.spacing(1), sm: theme.spacing(2)},
@@ -49,7 +50,6 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
         borderRadius: "md",
         p: 2,
         overflow: "auto",
-        zIndex: 3
       })}
     >
       <AspectRatio sx={{minWidth: 200, overflow: "none", m: -2, mb: 2}}>

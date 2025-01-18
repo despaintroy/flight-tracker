@@ -9,6 +9,7 @@ import AircraftLayers from "@/components/MainMap/layers/AircraftLayers"
 import {useOnLoadMap} from "@/components/MainMap/mainMapHelpers"
 import {COORDINATES} from "@/lib/constants"
 import AircraftPathsLayer from "@/components/MainMap/layers/AircraftPathsLayer"
+import SearchBar from "@/components/SearchBar"
 
 const DEFAULT_ZOOM = 10
 
@@ -61,6 +62,7 @@ const MainMap: FC = () => {
         />
       </Map>
 
+      <SearchBar />
       <DetailsPopover aircraft={selectedAircraft} />
     </>
   )

@@ -118,7 +118,7 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
       return newMap
     })
-  }, [mapCenter])
+  }, [fetchType, mapCenter])
 
   const isPageVisible = usePageVisibility()
   useEffect(() => {

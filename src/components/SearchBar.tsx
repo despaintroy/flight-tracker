@@ -5,6 +5,7 @@ import {
   FormControl,
   IconButton,
   Modal,
+  ModalClose,
   ModalDialog,
   Radio,
   RadioGroup,
@@ -65,8 +66,9 @@ const SearchBar: FC = () => {
             screenWidth <= theme.breakpoints.values.sm ? "fullscreen" : "center"
           }
           maxWidth="sm"
-          sx={{width: "100%"}}
+          sx={{width: "100%", pt: 6}}
         >
+          <ModalClose />
           <DialogContent>
             {fetchType.type !== "radius" ? (
               <Button

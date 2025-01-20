@@ -23,6 +23,55 @@ import {AircraftHistoryContext} from "@/lib/providers/AircraftHistoryContext"
 import {AircraftType, searchTypes} from "@/services/searchTypes"
 import useDebouncedValue from "@/lib/hooks/useDebouncedValue"
 
+const SearchContent: FC = () => {
+  const {setFetchType} = useContext(AircraftHistoryContext)
+  const [inputValue, setInputValue] = useState("")
+
+  return (
+    <>
+      <Input
+        placeholder="Search"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
+      {inputValue ? (
+        <List>
+          <ListItem>
+            <ListItemButton
+              onClick={() => {
+                setFetchType({type: "hex", hex: inputValue})
+                setInputValue("")
+              }}
+            >
+              <ListItemContent>Hex: {inputValue}</ListItemContent>
+            </ListItemButton>
+          </ListItem>
+          <ListItem>
+            <ListItemButton
+              onClick={() => {
+                setFetchType({type: "callsign", callsign: inputValue})
+                setInputValue("")
+              }}
+            >
+              <ListItemContent>Callsign: {inputValue}</ListItemContent>
+            </ListItemButton>
+          </ListItem>
+          <ListItem>
+            <ListItemButton
+              onClick={() => {
+                setFetchType({type: "registration", registration: inputValue})
+                setInputValue("")
+              }}
+            >
+              <ListItemContent>Registration: {inputValue}</ListItemContent>
+            </ListItemButton>
+          </ListItem>
+        </List>
+      ) : null}
+    </>
+  )
+}
+
 enum CategoryType {
   MILITARY = "mil",
   LADD = "ladd",
@@ -156,7 +205,7 @@ const SearchBar: FC = () => {
             {(() => {
               switch (toggleValue) {
                 case "search":
-                  return null
+                  return <SearchContent />
                 case "type":
                   return <TypeContent />
                 case "category":

@@ -1,9 +1,14 @@
-import {FC, useContext, useState} from "react"
+import {FC, useContext, useEffect, useRef, useState} from "react"
 import {
   Button,
   DialogContent,
   FormControl,
   IconButton,
+  Input,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemContent,
   Modal,
   ModalClose,
   ModalDialog,
@@ -15,6 +20,8 @@ import {Search} from "@mui/icons-material"
 import useScreenWidth from "@/lib/hooks/useScreenWidth"
 import theme from "@/components/ThemeRegistry/theme"
 import {AircraftHistoryContext} from "@/lib/providers/AircraftHistoryContext"
+import {AircraftType, searchTypes} from "@/services/searchTypes"
+import useDebouncedValue from "@/lib/hooks/useDebouncedValue"
 
 enum CategoryType {
   MILITARY = "mil",
@@ -36,6 +43,55 @@ const CategoryContent: FC = () => {
         <Radio value={CategoryType.PIA} label="PIA" />
       </RadioGroup>
     </FormControl>
+  )
+}
+
+const TypeContent: FC = () => {
+  const {setFetchType} = useContext(AircraftHistoryContext)
+
+  const [data, setData] = useState<AircraftType[]>([])
+  const [inputValue, setInputValue] = useState("")
+
+  const debouncedInputValue = useDebouncedValue(inputValue, 500)
+
+  const requestIdRef = useRef(Math.random())
+  useEffect(() => {
+    if (!debouncedInputValue) {
+      setData([])
+      return
+    }
+
+    const requestId = Math.random()
+    requestIdRef.current = requestId
+
+    searchTypes(debouncedInputValue).then((data) => {
+      if (requestId === requestIdRef.current) setData(data)
+    })
+  }, [debouncedInputValue])
+
+  return (
+    <>
+      <Input
+        placeholder="Search aircraft type"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
+      <List>
+        {data.map((type) => (
+          <ListItem key={type.aircraftType}>
+            <ListItemButton
+              onClick={() => {
+                setFetchType({type: "type", aircraftType: type.aircraftType})
+                setInputValue("")
+                setData([])
+              }}
+            >
+              <ListItemContent>{type.manufacturerModel}</ListItemContent>
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </>
   )
 }
 
@@ -102,7 +158,7 @@ const SearchBar: FC = () => {
                 case "search":
                   return null
                 case "type":
-                  return null
+                  return <TypeContent />
                 case "category":
                   return <CategoryContent />
               }

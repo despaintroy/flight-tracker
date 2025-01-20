@@ -1,4 +1,4 @@
-Aircraft TypeDesignator,Class,Number+Engine Type,"MANUFACTURER, Model"
+aircraftType,class,engines,"manufacturerModel"
 A002,Gyrocopter,1/Piston,"IRKUT, A-002"
 A1,LandPlane,1/Piston,"DOUGLAS, A-1 Skyraider"
 A10,LandPlane,2/Jet,"FAIRCHILD, A-10 Thunderbolt 2"
@@ -2763,4 +2763,3 @@ UHEL,0,/,"(any manufacturer), Ultralight helicopter"
 ULAC,0,/,"(any manufacturer), Ultralight aircraft"
 VFHC,0,/,"(any manufacturer), UA Vertical Flight and Hover Capability"
 ZZZZ,0,/,"(any manufacturer), Aircraft type not (yet) assigned a designator"
-

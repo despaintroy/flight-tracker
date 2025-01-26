@@ -14,8 +14,7 @@ import {
   Typography
 } from "@mui/joy"
 import {AircraftData} from "@/services/adsbTypes"
-import {PhotosResponse} from "@/services/photosTypes"
-import {getPhotos} from "@/services/photos"
+import {getPhotos, Photo} from "@/services/photos"
 import {COORDINATES} from "@/lib/constants"
 import {ADSB} from "@/services/adsb"
 
@@ -26,7 +25,7 @@ type AircraftCardProps = {
 }
 
 const AircraftCard: FC<AircraftCardProps> = ({aircraft}) => {
-  const [images, setImages] = useState<PhotosResponse | null>(null)
+  const [images, setImages] = useState<Photo[] | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const elementRef = useRef<HTMLDivElement>(null)
 
@@ -55,8 +54,14 @@ const AircraftCard: FC<AircraftCardProps> = ({aircraft}) => {
   useEffect(() => {
     if (!isVisible) return
 
-    getPhotos({hex: aircraft.hex}).then(setImages).catch(console.error)
-  }, [aircraft.hex, isVisible])
+    getPhotos({
+      hex: aircraft.hex,
+      description: aircraft.desc,
+      icaoType: aircraft.t
+    })
+      .then(setImages)
+      .catch(console.error)
+  }, [aircraft.desc, aircraft.hex, aircraft.t, isVisible])
 
   return (
     <Card onClick={() => console.log(aircraft)} ref={elementRef}>
@@ -64,12 +69,12 @@ const AircraftCard: FC<AircraftCardProps> = ({aircraft}) => {
         <AspectRatio sx={{minWidth: 200}}>
           {images === null ? (
             <Skeleton variant="rectangular" />
-          ) : !images?.photos.length ? (
+          ) : !images?.length ? (
             <Box sx={{bgcolor: "#ddd"}}>
               <Typography>No image available</Typography>
             </Box>
           ) : (
-            <img src={images.photos[0].thumbnail_large.src} alt="" />
+            <img src={images[0].src} alt="" />
           )}
         </AspectRatio>
       </CardOverflow>

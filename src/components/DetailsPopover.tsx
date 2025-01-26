@@ -1,12 +1,20 @@
 import {FC, useEffect, useState} from "react"
 import {AircraftData} from "@/services/adsbTypes"
-import {AspectRatio, Box, Divider, Sheet, Skeleton, Typography} from "@mui/joy"
-import {PhotosResponse} from "@/services/photosTypes"
-import {getPhotos} from "@/services/photos"
+import {
+  AspectRatio,
+  Box,
+  Divider,
+  Sheet,
+  Skeleton,
+  Stack,
+  Typography
+} from "@mui/joy"
 import {FlightRoute} from "@/services/flightRouteTypes"
 import {getFlightRoute} from "@/services/flightRoute"
 import {Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
+import {getPhotos, Photo} from "@/services/photos"
+import wikipedia from "wikipedia"
 
 type DetailsPopoverProps = {
   aircraft: AircraftData | null
@@ -14,15 +22,36 @@ type DetailsPopoverProps = {
 
 const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const {aircraft} = props
-  const [images, setImages] = useState<PhotosResponse | null>(null)
+  const [images, setImages] = useState<Photo[] | null>(null)
   const [flightRoute, setFlightRoute] = useState<FlightRoute | null>(null)
+
+  useEffect(() => {
+    console.debug(aircraft)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aircraft?.hex])
+
+  useEffect(() => {
+    if (!aircraft?.desc) return
+
+    wikipedia
+      .search(aircraft.desc)
+      .then((results) => results.results[0].title)
+      .then((title) => wikipedia.infobox(title))
+      .then(console.log)
+  }, [aircraft?.desc])
 
   useEffect(() => {
     setImages(null)
     if (!aircraft?.hex) return
 
-    getPhotos({hex: aircraft.hex}).then(setImages).catch(console.error)
-  }, [aircraft?.hex])
+    getPhotos({
+      hex: aircraft.hex,
+      icaoType: aircraft.t,
+      description: aircraft.desc
+    })
+      .then(setImages)
+      .catch(() => setImages([]))
+  }, [aircraft?.desc, aircraft?.hex, aircraft?.t])
 
   useEffect(() => {
     setFlightRoute(null)
@@ -34,6 +63,8 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   }, [aircraft?.flight])
 
   if (!aircraft) return null
+
+  const image = images?.at(0)
 
   return (
     <Sheet
@@ -49,20 +80,44 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
         bg: "background",
         borderRadius: "md",
         p: 2,
-        overflow: "auto",
+        overflow: "auto"
       })}
     >
-      <AspectRatio sx={{minWidth: 200, overflow: "none", m: -2, mb: 2}}>
-        {images === null ? (
-          <Skeleton variant="rectangular" />
-        ) : !images?.photos.length ? (
-          <Box sx={{bg: "background.level1"}}>
-            <Typography>No image available</Typography>
-          </Box>
-        ) : (
-          <img src={images.photos[0].thumbnail_large.src} alt="" />
-        )}
-      </AspectRatio>
+      <Stack mb={2} position="relative">
+        <AspectRatio sx={{minWidth: 200, overflow: "none", m: -2, mb: 0}}>
+          {images === null ? (
+            <Skeleton variant="rectangular" />
+          ) : !image ? (
+            <Box sx={{bg: "background.level1"}}>
+              <Typography>No image available</Typography>
+            </Box>
+          ) : (
+            <img
+              src={image.src}
+              alt=""
+              style={{
+                objectFit: "contain",
+                width: "100%",
+                height: "100%"
+              }}
+            />
+          )}
+        </AspectRatio>
+
+        {image?.attribution ? (
+          <Typography
+            level="body-xs"
+            fontStyle="italic"
+            position="absolute"
+            alignSelf="center"
+            px={1}
+            top={-18}
+            sx={{bgcolor: "rgb(0 0 0 / 50%)", color: "white"}}
+          >
+            {image.attribution}
+          </Typography>
+        ) : null}
+      </Stack>
 
       <Typography level="body-xs">
         {[aircraft.flight?.trim(), flightRoute?.airline?.name ?? aircraft.ownOp]

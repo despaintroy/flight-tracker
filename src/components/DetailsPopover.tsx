@@ -1,4 +1,4 @@
-import {FC, useEffect, useState} from "react"
+import {FC, useEffect} from "react"
 import {AircraftData, CATEGORY_DESCRIPTIONS} from "@/services/adsbTypes"
 import {
   AspectRatio,
@@ -9,11 +9,10 @@ import {
   Stack,
   Typography
 } from "@mui/joy"
-import {FlightRoute} from "@/services/flightRouteTypes"
-import {getFlightRoute} from "@/services/flightRoute"
+import {useFlightRoute} from "@/services/flightRoute"
 import {Flight, Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
-import {getPhotos, Photo} from "@/services/photos"
+import {usePhotos} from "@/services/photos"
 import wikipedia from "wikipedia"
 
 type DetailsPopoverProps = {
@@ -22,8 +21,14 @@ type DetailsPopoverProps = {
 
 const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const {aircraft} = props
-  const [images, setImages] = useState<Photo[] | null>(null)
-  const [flightRoute, setFlightRoute] = useState<FlightRoute | null>(null)
+  const {data: images} = usePhotos({
+    hex: aircraft?.hex,
+    icaoType: aircraft?.t,
+    description: aircraft?.desc
+  })
+  const {data: flightRoute, isLoading: isLoadingFlightRoute} = useFlightRoute({
+    callsign: aircraft?.flight
+  })
 
   useEffect(() => {
     console.debug(aircraft)
@@ -38,28 +43,6 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       .then((results) => results.results[0].title)
       .then((title) => wikipedia.infobox(title))
   }, [aircraft?.desc])
-
-  useEffect(() => {
-    setImages(null)
-    if (!aircraft?.hex) return
-
-    getPhotos({
-      hex: aircraft.hex,
-      icaoType: aircraft.t,
-      description: aircraft.desc
-    })
-      .then(setImages)
-      .catch(() => setImages([]))
-  }, [aircraft?.desc, aircraft?.hex, aircraft?.t])
-
-  useEffect(() => {
-    setFlightRoute(null)
-    if (!aircraft?.flight) return
-
-    getFlightRoute({callsign: aircraft.flight})
-      .then(setFlightRoute)
-      .catch(console.error)
-  }, [aircraft?.flight])
 
   if (!aircraft) return null
 
@@ -119,7 +102,12 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       </Stack>
 
       <Typography level="body-xs">
-        {[aircraft.flight?.trim(), flightRoute?.airline?.name ?? aircraft.ownOp]
+        {[
+          aircraft.flight?.trim(),
+          isLoadingFlightRoute
+            ? null
+            : (flightRoute?.airline?.name ?? aircraft.ownOp)
+        ]
           .filter(Boolean)
           .join(" – ") || "No operator information"}
       </Typography>

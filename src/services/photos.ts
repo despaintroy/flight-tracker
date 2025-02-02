@@ -1,6 +1,7 @@
 import wikipedia from "wikipedia"
 import {getWikipediaMainImage} from "@/services/wikipedia"
 import axios from "axios"
+import {useQuery} from "@tanstack/react-query"
 
 export type Photo = {
   src: string
@@ -28,7 +29,7 @@ export type PlaneSpottersResponse = {
 }
 
 type GetPhotosParams = {
-  hex: string
+  hex: string | undefined
   description: string | undefined
   icaoType: string | undefined
 }
@@ -36,11 +37,13 @@ type GetPhotosParams = {
 export const getPhotos = async (params: GetPhotosParams): Promise<Photo[]> => {
   const {hex, icaoType, description} = params
 
-  const planeSpottersResponse = await axios.get<PlaneSpottersResponse>(
-    `https://api.planespotters.net/pub/photos/hex/${hex}`
-  )
+  searchPlaneSpotters: {
+    if (!hex) break searchPlaneSpotters
+    const planeSpottersResponse = await axios.get<PlaneSpottersResponse>(
+      `https://api.planespotters.net/pub/photos/hex/${hex}`
+    )
+    if (!planeSpottersResponse.data.photos.length) break searchPlaneSpotters
 
-  if (planeSpottersResponse.data.photos.length > 0) {
     return planeSpottersResponse.data.photos.map((photo) => {
       const {src, size} = photo.thumbnail_large ?? photo.thumbnail
       return {
@@ -80,4 +83,12 @@ export const getPhotos = async (params: GetPhotosParams): Promise<Photo[]> => {
   }
 
   return []
+}
+
+export const usePhotos = (params: GetPhotosParams) => {
+  return useQuery({
+    queryKey: ["photos", params],
+    queryFn: () => getPhotos(params),
+    staleTime: Infinity
+  })
 }

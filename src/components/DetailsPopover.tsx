@@ -21,7 +21,7 @@ type DetailsPopoverProps = {
 
 const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const {aircraft} = props
-  const {data: images} = usePhotos({
+  const {data: images, isLoading: isLoadingImages} = usePhotos({
     hex: aircraft?.hex,
     icaoType: aircraft?.t,
     description: aircraft?.desc
@@ -67,7 +67,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     >
       <Stack mb={2} position="relative">
         <AspectRatio sx={{minWidth: 200, overflow: "none", m: -2, mb: 0}}>
-          {images === null ? (
+          {isLoadingImages ? (
             <Skeleton variant="rectangular" />
           ) : !image ? (
             <Box sx={{bg: "background.level1"}}>

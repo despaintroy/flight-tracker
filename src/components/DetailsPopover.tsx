@@ -1,5 +1,5 @@
 import {FC, useEffect, useState} from "react"
-import {AircraftData} from "@/services/adsbTypes"
+import {AircraftData, CATEGORY_DESCRIPTIONS} from "@/services/adsbTypes"
 import {
   AspectRatio,
   Box,
@@ -11,7 +11,7 @@ import {
 } from "@mui/joy"
 import {FlightRoute} from "@/services/flightRouteTypes"
 import {getFlightRoute} from "@/services/flightRoute"
-import {Landscape, Speed} from "@mui/icons-material"
+import {Flight, Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
 import {getPhotos, Photo} from "@/services/photos"
 import wikipedia from "wikipedia"
@@ -37,7 +37,6 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       .search(aircraft.desc)
       .then((results) => results.results[0].title)
       .then((title) => wikipedia.infobox(title))
-      .then(console.log)
   }, [aircraft?.desc])
 
   useEffect(() => {
@@ -143,6 +142,14 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       {aircraft.gs ? (
         <Typography startDecorator={<Speed fontSize="small" />}>
           {`${Math.round(knotsToMph(aircraft.gs))} mph`}
+        </Typography>
+      ) : null}
+
+      {aircraft.category ? (
+        <Typography startDecorator={<Flight fontSize="small" />}>
+          {aircraft.category}
+          {" – "}
+          {CATEGORY_DESCRIPTIONS.get(aircraft.category) ?? "Unknown category"}
         </Typography>
       ) : null}
     </Sheet>

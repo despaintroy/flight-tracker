@@ -14,18 +14,90 @@ import {
   ModalDialog,
   Radio,
   RadioGroup,
-  ToggleButtonGroup
+  Tab,
+  TabList,
+  TabPanel,
+  Tabs
 } from "@mui/joy"
 import {Search} from "@mui/icons-material"
 import useScreenWidth from "@/lib/hooks/useScreenWidth"
 import theme from "@/components/ThemeRegistry/theme"
-import {AircraftHistoryContext} from "@/lib/providers/AircraftHistoryContext"
+import {
+  ADSBFetchType,
+  AircraftHistoryContext
+} from "@/lib/providers/AircraftHistoryContext"
 import {AircraftType, searchTypes} from "@/services/searchTypes"
 import useDebouncedValue from "@/lib/hooks/useDebouncedValue"
+
+type SearchResult = {
+  label: string
+  value: ADSBFetchType
+}
 
 const SearchContent: FC = () => {
   const {setFetchType} = useContext(AircraftHistoryContext)
   const [inputValue, setInputValue] = useState("")
+  const [results, setResults] = useState<SearchResult[]>([])
+
+  const debouncedInputValue = useDebouncedValue(inputValue, 200)
+
+  // const requestIdRef = useRef(Math.random())
+  useEffect(() => {
+    if (!debouncedInputValue) {
+      setResults([])
+      return
+    }
+
+    const newResults: SearchResult[] = []
+
+    if (debouncedInputValue.length >= 3) {
+      newResults.push({
+        label: `Callsign: ${debouncedInputValue.toUpperCase()}`,
+        value: {type: "callsign", callsign: debouncedInputValue.toUpperCase()}
+      })
+    }
+
+    if (
+      debouncedInputValue.length === 6 &&
+      /^[0-9a-f]{6}$/.test(debouncedInputValue)
+    ) {
+      newResults.push({
+        label: `Hex: ${debouncedInputValue.toLowerCase()}`,
+        value: {type: "hex", hex: debouncedInputValue.toLowerCase()}
+      })
+    }
+
+    if (debouncedInputValue.length >= 4 && debouncedInputValue.length <= 6) {
+      newResults.push({
+        label: `Registration: ${debouncedInputValue.toUpperCase()}`,
+        value: {
+          type: "registration",
+          registration: debouncedInputValue.toUpperCase()
+        }
+      })
+    }
+
+    setResults(newResults)
+
+    // const requestId = Math.random()
+    // requestIdRef.current = requestId
+
+    // searchTypes(debouncedInputValue)
+    //   .then((data) => {
+    //     console.log(data)
+    //     if (requestId !== requestIdRef.current) return
+    //
+    //     setResults(
+    //       data
+    //         .map<SearchResult>((type) => ({
+    //           label: type.manufacturerModel,
+    //           value: {type: "type", aircraftType: type.aircraftType}
+    //         }))
+    //         .concat(newResults)
+    //     )
+    //   })
+    //   .catch(console.error)
+  }, [debouncedInputValue])
 
   return (
     <>
@@ -34,40 +106,21 @@ const SearchContent: FC = () => {
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
       />
-      {inputValue ? (
-        <List>
-          <ListItem>
+
+      <List>
+        {results.map((result) => (
+          <ListItem key={result.label}>
             <ListItemButton
               onClick={() => {
-                setFetchType({type: "hex", hex: inputValue})
+                setFetchType(result.value)
                 setInputValue("")
               }}
             >
-              <ListItemContent>Hex: {inputValue}</ListItemContent>
+              <ListItemContent>{result.label}</ListItemContent>
             </ListItemButton>
           </ListItem>
-          <ListItem>
-            <ListItemButton
-              onClick={() => {
-                setFetchType({type: "callsign", callsign: inputValue})
-                setInputValue("")
-              }}
-            >
-              <ListItemContent>Callsign: {inputValue}</ListItemContent>
-            </ListItemButton>
-          </ListItem>
-          <ListItem>
-            <ListItemButton
-              onClick={() => {
-                setFetchType({type: "registration", registration: inputValue})
-                setInputValue("")
-              }}
-            >
-              <ListItemContent>Registration: {inputValue}</ListItemContent>
-            </ListItemButton>
-          </ListItem>
-        </List>
-      ) : null}
+        ))}
+      </List>
     </>
   )
 }
@@ -147,7 +200,6 @@ const TypeContent: FC = () => {
 const SearchBar: FC = () => {
   const {fetchType, setFetchType} = useContext(AircraftHistoryContext)
   const [open, setOpen] = useState(false)
-  const [toggleValue, setToggleValue] = useState("search")
   const screenWidth = useScreenWidth()
 
   return (
@@ -185,33 +237,19 @@ const SearchBar: FC = () => {
               </Button>
             ) : null}
 
-            <ToggleButtonGroup
-              value={toggleValue}
-              onChange={(_e, newValue) => {
-                if (newValue) setToggleValue(newValue)
-              }}
-            >
-              <Button value="search" fullWidth>
-                Search
-              </Button>
-              <Button value="type" fullWidth>
-                Type
-              </Button>
-              <Button value="category" fullWidth>
-                Category
-              </Button>
-            </ToggleButtonGroup>
+            <Tabs orientation="horizontal">
+              <TabList tabFlex={1}>
+                <Tab>Search</Tab>
+                <Tab>Category</Tab>
+              </TabList>
 
-            {(() => {
-              switch (toggleValue) {
-                case "search":
-                  return <SearchContent />
-                case "type":
-                  return <TypeContent />
-                case "category":
-                  return <CategoryContent />
-              }
-            })()}
+              <TabPanel value={0}>
+                <SearchContent />
+              </TabPanel>
+              <TabPanel value={1}>
+                <CategoryContent />
+              </TabPanel>
+            </Tabs>
           </DialogContent>
         </ModalDialog>
       </Modal>

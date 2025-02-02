@@ -1,7 +1,7 @@
 import * as React from "react"
 import {FC, useMemo} from "react"
 import {Layer, Source} from "react-map-gl"
-import {LayerIDs} from "@/components/MainMap/mainMapHelpers"
+import {LayerID} from "@/components/MainMap/mainMapHelpers"
 import {AircraftWithHistory} from "@/lib/providers/AircraftHistoryContext"
 import {GeoJSON} from "geojson"
 
@@ -46,7 +46,7 @@ const AircraftPathsLayer: FC<AircraftPathsLayerProps> = (props) => {
       data={aircraftHistoriesGeoJSON}
     >
       <Layer
-        id={LayerIDs.AircraftPaths}
+        id={LayerID.AircraftPaths}
         type="line"
         paint={{
           "line-color": [

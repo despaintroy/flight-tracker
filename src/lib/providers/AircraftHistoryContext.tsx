@@ -16,7 +16,7 @@ import usePageVisibility from "@/lib/hooks/usePageVisibility"
 
 const AIRCRAFT_MAP_STALE_TIME = 1000 * 60 * 5 // 5 minutes
 
-type ADSBFetchType =
+export type ADSBFetchType =
   | {type: "radius"}
   | {type: "mil"}
   | {type: "ladd"}

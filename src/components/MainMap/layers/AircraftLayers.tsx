@@ -4,7 +4,11 @@ import {GeoJSON} from "geojson"
 import {AircraftWithHistory} from "@/lib/providers/AircraftHistoryContext"
 import {Layer, Source} from "react-map-gl"
 import {SymbolLayerSpecification} from "mapbox-gl"
-import {IconIDs, LayerIDs} from "@/components/MainMap/mainMapHelpers"
+import {
+  getAircraftIcon,
+  IconID,
+  LayerID
+} from "@/components/MainMap/mainMapHelpers"
 
 type AircraftLayersProps = {
   aircraftWithHistories: AircraftWithHistory[]
@@ -27,7 +31,7 @@ const AircraftLayers: FC<AircraftLayersProps> = (props) => {
         properties: {
           rotation: aircraft.track ?? aircraft.true_heading ?? 0,
           hex: aircraft.hex,
-          icon: aircraft.hex.startsWith("~") ? IconIDs.Square : IconIDs.Airplane
+          icon: getAircraftIcon(aircraft)
         }
       }))
     }
@@ -45,9 +49,9 @@ const AircraftLayers: FC<AircraftLayersProps> = (props) => {
   return (
     <Source id="aircraft-source" type="geojson" data={airplanesGeoJSON}>
       <Layer
-        id={LayerIDs.AirplaneIcons}
+        id={LayerID.AirplaneIcons}
         type="symbol"
-        filter={["==", ["get", "icon"], IconIDs.Airplane]}
+        filter={["==", ["get", "icon"], IconID.Airplane]}
         layout={{
           "icon-image": ["get", "icon"],
           "icon-size": 0.3,
@@ -58,12 +62,25 @@ const AircraftLayers: FC<AircraftLayersProps> = (props) => {
       />
 
       <Layer
-        id={LayerIDs.SquareIcons}
+        id={LayerID.SquareIcons}
         type="symbol"
-        filter={["==", ["get", "icon"], IconIDs.Square]}
+        filter={["==", ["get", "icon"], IconID.Square]}
         layout={{
           "icon-image": ["get", "icon"],
           "icon-size": 0.15,
+          "icon-allow-overlap": true
+        }}
+        paint={selectableSymbolPaint}
+      />
+
+      <Layer
+        id={LayerID.VehicleIcons}
+        type="symbol"
+        filter={["==", ["get", "icon"], IconID.Vehicle]}
+        layout={{
+          "icon-image": ["get", "icon"],
+          "icon-size": 0.13,
+          "icon-rotate": ["get", "rotation"],
           "icon-allow-overlap": true
         }}
         paint={selectableSymbolPaint}

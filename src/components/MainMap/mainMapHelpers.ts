@@ -1,15 +1,26 @@
 import {Dispatch, SetStateAction, useCallback} from "react"
 import {GeolocateControl, MapEvent} from "mapbox-gl"
+import {AircraftData} from "@/services/adsbTypes"
 
-export enum LayerIDs {
+export enum LayerID {
   AirplaneIcons = "airplane-icons-layer",
   SquareIcons = "square-icons-layer",
+  VehicleIcons = "vehicle-icons-layer",
   AircraftPaths = "aircraft-paths-layer"
 }
 
-export enum IconIDs {
+export enum IconID {
   Airplane = "airplane-icon",
-  Square = "square-icon"
+  Square = "square-icon",
+  Vehicle = "vahicle-icon"
+}
+
+export const getAircraftIcon = (aircraft: AircraftData): IconID => {
+  if (aircraft.category === "C1" || aircraft.category === "C2")
+    return IconID.Vehicle
+  if (/^[AB]/.test(aircraft.hex)) return IconID.Airplane
+  if (aircraft.hex.startsWith("~")) return IconID.Square
+  return IconID.Airplane
 }
 
 type UseOnLoadMapParams = {
@@ -41,8 +52,9 @@ export const useOnLoadMap = (params: UseOnLoadMapParams) => {
       )
 
       const icons = {
-        [IconIDs.Airplane]: "airplane.png",
-        [IconIDs.Square]: "square.png"
+        [IconID.Airplane]: "airplane.png",
+        [IconID.Square]: "square.png",
+        [IconID.Vehicle]: "vehicle.png"
       }
 
       Object.entries(icons).forEach(([id, path]) => {
@@ -54,7 +66,11 @@ export const useOnLoadMap = (params: UseOnLoadMapParams) => {
 
       map.on("click", () => setSelectedHex(null))
 
-      const clickableIconLayers = [LayerIDs.AirplaneIcons, LayerIDs.SquareIcons]
+      const clickableIconLayers = [
+        LayerID.AirplaneIcons,
+        LayerID.SquareIcons,
+        LayerID.VehicleIcons
+      ]
 
       clickableIconLayers.forEach((layer) => {
         map.on("click", layer, (e) => {

@@ -1,7 +1,8 @@
+"use server"
+
 import wikipedia from "wikipedia"
 import {getWikipediaMainImage} from "@/services/wikipedia"
 import axios from "axios"
-import {useQuery} from "@tanstack/react-query"
 
 export type Photo = {
   src: string
@@ -28,7 +29,7 @@ export type PlaneSpottersResponse = {
   }>
 }
 
-type GetPhotosParams = {
+export type GetPhotosParams = {
   hex: string | undefined
   description: string | undefined
   icaoType: string | undefined
@@ -83,12 +84,4 @@ export const getPhotos = async (params: GetPhotosParams): Promise<Photo[]> => {
   }
 
   return []
-}
-
-export const usePhotos = (params: GetPhotosParams) => {
-  return useQuery({
-    queryKey: ["photos", params],
-    queryFn: () => getPhotos(params),
-    staleTime: Infinity
-  })
 }

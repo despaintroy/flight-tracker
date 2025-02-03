@@ -372,6 +372,7 @@ export type AircraftData = {
   desc?: string
   year?: string
   ownOp?: string
+  dir?: number
 }
 
 export type ADSBEndpointResponse = {

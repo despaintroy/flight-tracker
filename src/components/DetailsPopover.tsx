@@ -9,11 +9,14 @@ import {
   Stack,
   Typography
 } from "@mui/joy"
-import {useFlightRoute} from "@/services/flightRoute"
 import {Flight, Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
-import {usePhotos} from "@/services/photos"
 import wikipedia from "wikipedia"
+import {
+  useFlightRoute,
+  useFlightStatsTracker,
+  usePhotos
+} from "@/services/serviceHooks"
 
 type DetailsPopoverProps = {
   aircraft: AircraftData | null
@@ -27,11 +30,19 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     description: aircraft?.desc
   })
   const {data: flightRoute, isLoading: isLoadingFlightRoute} = useFlightRoute({
+    callsign: aircraft?.flight,
+    hex: aircraft?.hex
+  })
+  const {data: flightStats} = useFlightStatsTracker({
     callsign: aircraft?.flight
   })
 
   useEffect(() => {
-    console.debug(aircraft)
+    if (flightStats) console.debug("[flight-stats]", flightStats)
+  }, [flightStats])
+
+  useEffect(() => {
+    if (aircraft) console.debug("[aircraft-data]", aircraft)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aircraft?.hex])
 
@@ -47,6 +58,12 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   if (!aircraft) return null
 
   const image = images?.at(0)
+
+  const routeDescription = (() => {
+    if (!flightStats) return null
+    const {departureAirport, arrivalAirport} = flightStats
+    return `${departureAirport.city} (${departureAirport.iata}) – ${arrivalAirport.city} (${arrivalAirport.iata})`
+  })()
 
   return (
     <Sheet
@@ -114,6 +131,9 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       <Typography level="title-lg">
         {aircraft.desc ?? aircraft.t ?? "Unknown aircraft"}
       </Typography>
+      {routeDescription ? (
+        <Typography level="body-md">{routeDescription}</Typography>
+      ) : null}
 
       <Divider sx={{my: 2}} />
 

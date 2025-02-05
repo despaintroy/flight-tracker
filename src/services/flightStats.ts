@@ -10,6 +10,7 @@ type GetFlightStatsTrackerResponse = {
 
 export type GetFlightStatsTrackerParams = {
   callsign: string | undefined
+  hex: string | undefined
 }
 
 export const getFlightStatsTracker = async (

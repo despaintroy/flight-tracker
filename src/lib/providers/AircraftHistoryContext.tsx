@@ -2,7 +2,9 @@
 
 import {
   createContext,
+  Dispatch,
   PropsWithChildren,
+  SetStateAction,
   useCallback,
   useEffect,
   useRef,
@@ -37,6 +39,7 @@ type AircraftWithHistoryMap = Map<string, AircraftWithHistory>
 
 type AircraftHistoryContextType = {
   aircraftMap: AircraftWithHistoryMap
+  setAircraftMap: Dispatch<SetStateAction<AircraftWithHistoryMap>>
   setMapCenter: (coordinate: Coordinate) => void
   activeHexes: string[]
   fetchType: ADSBFetchType
@@ -46,6 +49,7 @@ type AircraftHistoryContextType = {
 export const AircraftHistoryContext = createContext<AircraftHistoryContextType>(
   {
     aircraftMap: new Map(),
+    setAircraftMap: () => {},
     setMapCenter: () => {},
     activeHexes: [],
     fetchType: {type: "radius"},
@@ -148,7 +152,14 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
   return (
     <AircraftHistoryContext.Provider
-      value={{aircraftMap, setMapCenter, activeHexes, fetchType, setFetchType}}
+      value={{
+        aircraftMap,
+        setAircraftMap,
+        setMapCenter,
+        activeHexes,
+        fetchType,
+        setFetchType
+      }}
     >
       {children}
     </AircraftHistoryContext.Provider>

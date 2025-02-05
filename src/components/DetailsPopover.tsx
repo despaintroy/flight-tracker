@@ -34,7 +34,8 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     hex: aircraft?.hex
   })
   const {data: flightStats} = useFlightStatsTracker({
-    callsign: aircraft?.flight
+    callsign: aircraft?.flight,
+    hex: aircraft?.hex
   })
 
   useEffect(() => {
@@ -62,7 +63,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const routeDescription = (() => {
     if (!flightStats) return null
     const {departureAirport, arrivalAirport} = flightStats
-    return `${departureAirport.city} (${departureAirport.iata}) – ${arrivalAirport.city} (${arrivalAirport.iata})`
+    return `${departureAirport.city} (${departureAirport.iata}) → ${arrivalAirport.city} (${arrivalAirport.iata})`
   })()
 
   return (

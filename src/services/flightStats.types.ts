@@ -123,8 +123,8 @@ type Position = {
   source: string
   date: string
   course: number
-  vrateMps: number
-  lastObserved: string
+  vrateMps?: number
+  lastObserved?: string
 }
 
 type FlexTrack = {

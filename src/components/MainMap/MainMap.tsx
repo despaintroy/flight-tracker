@@ -8,7 +8,7 @@ import useADSBHistory from "@/lib/hooks/useADSBHistory"
 import AircraftLayers from "@/components/MainMap/layers/AircraftLayers"
 import {useOnLoadMap} from "@/components/MainMap/mainMapHelpers"
 import AircraftPathsLayer from "@/components/MainMap/layers/AircraftPathsLayer"
-import SearchBar from "@/components/SearchBar"
+import FilterModal from "@/components/FilterModal"
 import useViewState from "@/lib/hooks/useViewState"
 
 const MainMap: FC = () => {
@@ -52,7 +52,7 @@ const MainMap: FC = () => {
         />
       </Map>
 
-      <SearchBar />
+      <FilterModal />
       <DetailsPopover aircraft={selectedAircraft} />
     </>
   )

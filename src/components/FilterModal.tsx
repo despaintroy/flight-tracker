@@ -2,7 +2,7 @@ import {FC, useContext, useEffect, useState} from "react"
 import {
   Button,
   DialogContent,
-  FormControl,
+  DialogTitle,
   IconButton,
   Input,
   List,
@@ -11,15 +11,9 @@ import {
   ListItemContent,
   Modal,
   ModalClose,
-  ModalDialog,
-  Radio,
-  RadioGroup,
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs
+  ModalDialog
 } from "@mui/joy"
-import {Search} from "@mui/icons-material"
+import {FilterList} from "@mui/icons-material"
 import useScreenWidth from "@/lib/hooks/useScreenWidth"
 import theme from "@/components/ThemeRegistry/theme"
 import {
@@ -34,47 +28,17 @@ type SearchResult = {
   value: ADSBFetchType
 }
 
-const SearchContent: FC = () => {
+const ModalContent: FC = () => {
   const {setFetchType} = useContext(AircraftHistoryContext)
   const [inputValue, setInputValue] = useState("")
   const [results, setResults] = useState<SearchResult[]>([])
 
   const debouncedInputValue = useDebouncedValue(inputValue, 200)
 
-  // const requestIdRef = useRef(Math.random())
   useEffect(() => {
     if (!debouncedInputValue) {
       setResults([])
       return
-    }
-
-    const newResults: SearchResult[] = []
-
-    if (debouncedInputValue.length >= 3) {
-      newResults.push({
-        label: `Callsign: ${debouncedInputValue.toUpperCase()}`,
-        value: {type: "callsign", callsign: debouncedInputValue.toUpperCase()}
-      })
-    }
-
-    if (
-      debouncedInputValue.length === 6 &&
-      /^[0-9a-f]{6}$/.test(debouncedInputValue)
-    ) {
-      newResults.push({
-        label: `Hex: ${debouncedInputValue.toLowerCase()}`,
-        value: {type: "hex", hex: debouncedInputValue.toLowerCase()}
-      })
-    }
-
-    if (debouncedInputValue.length >= 4 && debouncedInputValue.length <= 6) {
-      newResults.push({
-        label: `Registration: ${debouncedInputValue.toUpperCase()}`,
-        value: {
-          type: "registration",
-          registration: debouncedInputValue.toUpperCase()
-        }
-      })
     }
 
     function normalizeValue(value: string): string {
@@ -82,6 +46,42 @@ const SearchContent: FC = () => {
     }
 
     const normalizedInputValue = normalizeValue(debouncedInputValue)
+
+    const newResults: SearchResult[] = []
+
+    if (normalizedInputValue.length >= 3) {
+      newResults.push({
+        label: `Callsign: ${normalizedInputValue.toUpperCase()}`,
+        value: {type: "callsign", callsign: normalizedInputValue.toUpperCase()}
+      })
+    }
+
+    if (
+      normalizedInputValue.length === 6 &&
+      /^[0-9a-f]{6}$/.test(normalizedInputValue)
+    ) {
+      newResults.push({
+        label: `Hex: ${normalizedInputValue.toLowerCase()}`,
+        value: {type: "hex", hex: normalizedInputValue.toLowerCase()}
+      })
+    }
+
+    if (normalizedInputValue.length >= 4 && normalizedInputValue.length <= 6) {
+      newResults.push({
+        label: `Registration: ${normalizedInputValue.toUpperCase()}`,
+        value: {
+          type: "registration",
+          registration: normalizedInputValue.toUpperCase()
+        }
+      })
+    }
+
+    if ("military".includes(normalizedInputValue)) {
+      newResults.push({
+        label: `All Military Aircraft`,
+        value: {type: "mil"}
+      })
+    }
 
     const types = AIRCRAFT_TYPE_INFO_ITEMS.filter((type) =>
       normalizeValue(type[5]).includes(normalizedInputValue)
@@ -95,25 +95,6 @@ const SearchContent: FC = () => {
     )
 
     setResults(newResults)
-
-    // const requestId = Math.random()
-    // requestIdRef.current = requestId
-
-    // searchTypes(debouncedInputValue)
-    //   .then((data) => {
-    //     console.log(data)
-    //     if (requestId !== requestIdRef.current) return
-    //
-    //     setResults(
-    //       data
-    //         .map<SearchResult>((type) => ({
-    //           label: type.manufacturerModel,
-    //           value: {type: "type", aircraftType: type.aircraftType}
-    //         }))
-    //         .concat(newResults)
-    //     )
-    //   })
-    //   .catch(console.error)
   }, [debouncedInputValue])
 
   return (
@@ -142,30 +123,7 @@ const SearchContent: FC = () => {
   )
 }
 
-enum CategoryType {
-  MILITARY = "mil",
-  LADD = "ladd",
-  PIA = "pia"
-}
-
-const CategoryContent: FC = () => {
-  const {fetchType, setFetchType} = useContext(AircraftHistoryContext)
-
-  return (
-    <FormControl>
-      <RadioGroup
-        value={fetchType.type}
-        onChange={(e) => setFetchType({type: e.target.value as CategoryType})}
-      >
-        <Radio value={CategoryType.MILITARY} label="Military" />
-        <Radio value={CategoryType.LADD} label="LADD" />
-        <Radio value={CategoryType.PIA} label="PIA" />
-      </RadioGroup>
-    </FormControl>
-  )
-}
-
-const SearchBar: FC = () => {
+const FilterModal: FC = () => {
   const {fetchType, setFetchType} = useContext(AircraftHistoryContext)
   const [open, setOpen] = useState(false)
   const screenWidth = useScreenWidth()
@@ -182,7 +140,7 @@ const SearchBar: FC = () => {
         variant="solid"
         onClick={() => setOpen(true)}
       >
-        <Search />
+        <FilterList />
       </IconButton>
 
       <Modal open={open} onClose={() => setOpen(false)}>
@@ -191,10 +149,11 @@ const SearchBar: FC = () => {
             screenWidth <= theme.breakpoints.values.sm ? "fullscreen" : "center"
           }
           maxWidth="sm"
-          sx={{width: "100%", pt: 6}}
+          sx={{width: "100%"}}
         >
           <ModalClose />
-          <DialogContent>
+          <DialogTitle>Filter Aircraft</DialogTitle>
+          <DialogContent sx={{mt: 1}}>
             {fetchType.type !== "radius" ? (
               <Button
                 sx={{mb: 1}}
@@ -205,19 +164,7 @@ const SearchBar: FC = () => {
               </Button>
             ) : null}
 
-            <Tabs orientation="horizontal">
-              <TabList tabFlex={1}>
-                <Tab>Search</Tab>
-                <Tab>Category</Tab>
-              </TabList>
-
-              <TabPanel value={0}>
-                <SearchContent />
-              </TabPanel>
-              <TabPanel value={1}>
-                <CategoryContent />
-              </TabPanel>
-            </Tabs>
+            <ModalContent />
           </DialogContent>
         </ModalDialog>
       </Modal>
@@ -225,4 +172,4 @@ const SearchBar: FC = () => {
   )
 }
 
-export default SearchBar
+export default FilterModal

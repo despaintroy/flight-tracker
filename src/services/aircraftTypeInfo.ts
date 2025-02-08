@@ -29,7 +29,7 @@ type AircraftTypeInfo = [
   model: string
 ]
 
-const AIRCRAFT_TYPE_INFO_ITEMS: AircraftTypeInfo[] = [
+export const AIRCRAFT_TYPE_INFO_ITEMS: AircraftTypeInfo[] = [
   ["A002", "Gyrocopter", 1, "Piston", "IRKUT", "A-002"],
   ["A1", "LandPlane", 1, "Piston", "DOUGLAS", "A-1 Skyraider"],
   ["A10", "LandPlane", 2, "Jet", "FAIRCHILD", "A-10 Thunderbolt 2"],

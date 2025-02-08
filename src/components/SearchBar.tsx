@@ -1,4 +1,4 @@
-import {FC, useContext, useEffect, useRef, useState} from "react"
+import {FC, useContext, useEffect, useState} from "react"
 import {
   Button,
   DialogContent,
@@ -26,8 +26,8 @@ import {
   ADSBFetchType,
   AircraftHistoryContext
 } from "@/lib/providers/AircraftHistoryContext"
-import {AircraftType, searchTypes} from "@/services/searchTypes"
 import useDebouncedValue from "@/lib/hooks/useDebouncedValue"
+import {AIRCRAFT_TYPE_INFO_ITEMS} from "@/services/aircraftTypeInfo"
 
 type SearchResult = {
   label: string
@@ -76,6 +76,23 @@ const SearchContent: FC = () => {
         }
       })
     }
+
+    function normalizeValue(value: string): string {
+      return value.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()
+    }
+
+    const normalizedInputValue = normalizeValue(debouncedInputValue)
+
+    const types = AIRCRAFT_TYPE_INFO_ITEMS.filter((type) =>
+      normalizeValue(type[5]).includes(normalizedInputValue)
+    ).slice(0, 5)
+
+    newResults.push(
+      ...types.map<SearchResult>((type) => ({
+        label: `${type[4]} ${type[5]}`,
+        value: {type: "type", aircraftType: type[0]}
+      }))
+    )
 
     setResults(newResults)
 
@@ -145,55 +162,6 @@ const CategoryContent: FC = () => {
         <Radio value={CategoryType.PIA} label="PIA" />
       </RadioGroup>
     </FormControl>
-  )
-}
-
-const TypeContent: FC = () => {
-  const {setFetchType} = useContext(AircraftHistoryContext)
-
-  const [data, setData] = useState<AircraftType[]>([])
-  const [inputValue, setInputValue] = useState("")
-
-  const debouncedInputValue = useDebouncedValue(inputValue, 500)
-
-  const requestIdRef = useRef(Math.random())
-  useEffect(() => {
-    if (!debouncedInputValue) {
-      setData([])
-      return
-    }
-
-    const requestId = Math.random()
-    requestIdRef.current = requestId
-
-    searchTypes(debouncedInputValue).then((data) => {
-      if (requestId === requestIdRef.current) setData(data)
-    })
-  }, [debouncedInputValue])
-
-  return (
-    <>
-      <Input
-        placeholder="Search aircraft type"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-      />
-      <List>
-        {data.map((type) => (
-          <ListItem key={type.aircraftType}>
-            <ListItemButton
-              onClick={() => {
-                setFetchType({type: "type", aircraftType: type.aircraftType})
-                setInputValue("")
-                setData([])
-              }}
-            >
-              <ListItemContent>{type.manufacturerModel}</ListItemContent>
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </>
   )
 }
 

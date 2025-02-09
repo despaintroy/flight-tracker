@@ -41,6 +41,7 @@ const MainMap: FC = () => {
         style={{width: "100%", height: "100vh"}}
         reuseMaps
         fadeDuration={0}
+        projection={{name: "globe"}}
       >
         <AircraftLayers
           aircraftWithHistories={aircraftWithHistories}

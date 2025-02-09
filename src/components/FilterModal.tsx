@@ -1,5 +1,6 @@
 import {FC, useContext, useEffect, useState} from "react"
 import {
+  Badge,
   Button,
   DialogContent,
   DialogTitle,
@@ -13,7 +14,7 @@ import {
   ModalClose,
   ModalDialog
 } from "@mui/joy"
-import {FilterList} from "@mui/icons-material"
+import {Close, FilterList} from "@mui/icons-material"
 import useScreenWidth from "@/lib/hooks/useScreenWidth"
 import theme from "@/components/ThemeRegistry/theme"
 import {
@@ -22,22 +23,18 @@ import {
 } from "@/lib/providers/AircraftHistoryContext"
 import useDebouncedValue from "@/lib/hooks/useDebouncedValue"
 import {AIRCRAFT_TYPE_INFO_ITEMS} from "@/services/aircraftTypeInfo"
-
-type SearchResult = {
-  label: string
-  value: ADSBFetchType
-}
+import {getFetchTypeLabel} from "@/lib/helpers"
 
 const ModalContent: FC = () => {
   const {setFetchType} = useContext(AircraftHistoryContext)
   const [inputValue, setInputValue] = useState("")
-  const [results, setResults] = useState<SearchResult[]>([])
+  const [options, setOptions] = useState<ADSBFetchType[]>([])
 
   const debouncedInputValue = useDebouncedValue(inputValue, 200)
 
   useEffect(() => {
     if (!debouncedInputValue) {
-      setResults([])
+      setOptions([])
       return
     }
 
@@ -47,12 +44,12 @@ const ModalContent: FC = () => {
 
     const normalizedInputValue = normalizeValue(debouncedInputValue)
 
-    const newResults: SearchResult[] = []
+    const newOptions: ADSBFetchType[] = []
 
     if (normalizedInputValue.length >= 3) {
-      newResults.push({
-        label: `Callsign: ${normalizedInputValue.toUpperCase()}`,
-        value: {type: "callsign", callsign: normalizedInputValue.toUpperCase()}
+      newOptions.push({
+        type: "callsign",
+        callsign: normalizedInputValue.toUpperCase()
       })
     }
 
@@ -60,41 +57,42 @@ const ModalContent: FC = () => {
       normalizedInputValue.length === 6 &&
       /^[0-9a-f]{6}$/.test(normalizedInputValue)
     ) {
-      newResults.push({
-        label: `Hex: ${normalizedInputValue.toLowerCase()}`,
-        value: {type: "hex", hex: normalizedInputValue.toLowerCase()}
+      newOptions.push({
+        type: "hex",
+        hex: normalizedInputValue.toLowerCase()
       })
     }
 
     if (normalizedInputValue.length >= 4 && normalizedInputValue.length <= 6) {
-      newResults.push({
-        label: `Registration: ${normalizedInputValue.toUpperCase()}`,
-        value: {
-          type: "registration",
-          registration: normalizedInputValue.toUpperCase()
-        }
+      newOptions.push({
+        type: "registration",
+        registration: normalizedInputValue.toUpperCase()
       })
     }
 
     if ("military".includes(normalizedInputValue)) {
-      newResults.push({
-        label: `All Military Aircraft`,
-        value: {type: "mil"}
-      })
+      newOptions.push({type: "mil"})
     }
 
     const types = AIRCRAFT_TYPE_INFO_ITEMS.filter((type) =>
       normalizeValue(type[5]).includes(normalizedInputValue)
     ).slice(0, 5)
 
-    newResults.push(
-      ...types.map<SearchResult>((type) => ({
-        label: `${type[4]} ${type[5]}`,
-        value: {type: "type", aircraftType: type[0]}
+    newOptions.push(
+      ...types.map<ADSBFetchType>((type) => ({
+        type: "type",
+        aircraftType: type[0]
       }))
     )
 
-    setResults(newResults)
+    if (/^[0-9]{4}$/.test(normalizedInputValue)) {
+      newOptions.push({
+        type: "squawk",
+        squawk: normalizedInputValue
+      })
+    }
+
+    setOptions(newOptions)
   }, [debouncedInputValue])
 
   return (
@@ -106,18 +104,22 @@ const ModalContent: FC = () => {
       />
 
       <List>
-        {results.map((result) => (
-          <ListItem key={result.label}>
-            <ListItemButton
-              onClick={() => {
-                setFetchType(result.value)
-                setInputValue("")
-              }}
-            >
-              <ListItemContent>{result.label}</ListItemContent>
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {options.map((option) => {
+          const label = getFetchTypeLabel(option)
+
+          return (
+            <ListItem key={label}>
+              <ListItemButton
+                onClick={() => {
+                  setFetchType(option)
+                  setInputValue("")
+                }}
+              >
+                <ListItemContent>{label}</ListItemContent>
+              </ListItemButton>
+            </ListItem>
+          )
+        })}
       </List>
     </>
   )
@@ -140,7 +142,9 @@ const FilterModal: FC = () => {
         variant="solid"
         onClick={() => setOpen(true)}
       >
-        <FilterList />
+        <Badge badgeInset="-20%" invisible={fetchType.type === "radius"}>
+          <FilterList />
+        </Badge>
       </IconButton>
 
       <Modal open={open} onClose={() => setOpen(false)}>
@@ -159,8 +163,9 @@ const FilterModal: FC = () => {
                 sx={{mb: 1}}
                 variant="soft"
                 onClick={() => setFetchType({type: "radius"})}
+                endDecorator={<Close />}
               >
-                Reset
+                {getFetchTypeLabel(fetchType)}
               </Button>
             ) : null}
 

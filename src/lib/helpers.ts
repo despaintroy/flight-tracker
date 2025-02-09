@@ -1,3 +1,6 @@
+import {ADSBFetchType} from "@/lib/providers/AircraftHistoryContext"
+import {AIRCRAFT_TYPE_INFO_MAP} from "@/services/aircraftTypeInfo"
+
 export const knotsToMph = (knots: number) => knots * 1.15078
 
 export const safeJSONParse = (json: string): unknown => {
@@ -5,5 +8,30 @@ export const safeJSONParse = (json: string): unknown => {
     return JSON.parse(json)
   } catch {
     return null
+  }
+}
+
+export const getFetchTypeLabel = (fetchType: ADSBFetchType): string | null => {
+  switch (fetchType.type) {
+    case "mil":
+      return "Military"
+    case "ladd":
+      return "LADD"
+    case "pia":
+      return "PIA"
+    case "hex":
+      return `Hex: ${fetchType.hex}`
+    case "callsign":
+      return `Callsign: ${fetchType.callsign}`
+    case "registration":
+      return `Registration: ${fetchType.registration}`
+    case "type":
+      const info = AIRCRAFT_TYPE_INFO_MAP.get(fetchType.aircraftType)
+      if (!info) return `Type: ${fetchType.aircraftType}`
+      return `Type: ${info[4]} ${info[5]}`
+    case "squawk":
+      return `Squawk: ${fetchType.squawk}`
+    default:
+      return null
   }
 }

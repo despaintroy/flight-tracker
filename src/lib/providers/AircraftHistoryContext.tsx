@@ -107,6 +107,8 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
       aircraft.forEach((data) => {
         const {hex, lat, lon, seen = 0} = data
 
+        if (!lat && !lon) return
+
         const history = [...(prev.get(hex)?.history ?? [])]
         if (!history.length) history.push(...LOCAL_AIRCRAFT_DB.getHistory(hex))
 

@@ -15,15 +15,15 @@ type FlightNote = {
   hasActualGateDepartureTime: boolean
 }
 
-type ScheduleTimes = {
+export type ScheduleTimes = {
   time: string
   ampm: string
   time24: string
   timezone: string
 }
 
-type EstimatedActualTime = {
-  title: string
+export type EstimatedActualTime = {
+  title: "Actual" | "Estimated"
   time: string
   ampm: string
   time24: string
@@ -64,7 +64,7 @@ type Carrier = {
   fs: string
 }
 
-type Airport = {
+export type Airport = {
   fs: string
   iata: string
   name: string

@@ -17,6 +17,7 @@ import {
   useFlightStatsTracker,
   usePhotos
 } from "@/services/serviceHooks"
+import FlightInfoBlock from "@/components/DetailsPopover/FlightInfoBlock"
 
 type DetailsPopoverProps = {
   aircraft: AircraftData | null
@@ -160,6 +161,13 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
           {" – "}
           {CATEGORY_DESCRIPTIONS.get(aircraft.category) ?? "Unknown category"}
         </Typography>
+      ) : null}
+
+      {flightStats ? (
+        <>
+          <Divider sx={{my: 2}} />
+          <FlightInfoBlock flightStats={flightStats} />
+        </>
       ) : null}
     </Sheet>
   )

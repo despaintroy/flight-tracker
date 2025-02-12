@@ -3,7 +3,7 @@
 import * as React from "react"
 import {FC, useRef, useState} from "react"
 import Map, {MapRef} from "react-map-gl"
-import DetailsPopover from "@/components/DetailsPopover"
+import DetailsPopover from "@/components/DetailsPopover/DetailsPopover"
 import useADSBHistory from "@/lib/hooks/useADSBHistory"
 import AircraftLayers from "@/components/MainMap/layers/AircraftLayers"
 import {useOnLoadMap} from "@/components/MainMap/mainMapHelpers"

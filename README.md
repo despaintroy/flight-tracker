@@ -7,6 +7,8 @@
 - Departure, arrival, delay, baggage
 - Follow my flight
 - Favorite flights
+- Handle diverted messaging
+- Nice UI for departure/arrival
 
 ### Info
 

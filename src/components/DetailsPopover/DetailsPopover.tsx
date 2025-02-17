@@ -81,7 +81,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
         bg: "background",
         borderRadius: "md",
         p: 2,
-        overflow: "auto"
+        overflowY: "auto"
       })}
     >
       <Stack mb={2} position="relative">

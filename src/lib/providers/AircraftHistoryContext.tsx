@@ -130,7 +130,11 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   useEffect(() => {
     if (!isPageVisible) return
 
-    const interval = setInterval(updateAircraft, 1000)
+    const interval = setInterval(() => {
+      updateAircraft().catch((error) => {
+        console.error("Failed to update aircraft:", error)
+      })
+    }, 1000)
     return () => clearInterval(interval)
   }, [updateAircraft, isPageVisible])
 

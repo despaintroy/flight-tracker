@@ -9,7 +9,7 @@ import {Stack, Typography} from "@mui/joy"
 import {ChevronRight} from "@mui/icons-material"
 
 const formatTime = (time: ScheduleTimes | EstimatedActualTime) => {
-  return `${time.time} ${time.ampm.toLowerCase()}`
+  return `${time.time} ${time.ampm?.toLowerCase()}`
 }
 
 enum DelayStatus {
@@ -32,6 +32,7 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
     const estimated = times.estimatedActual.time24
     const scheduled = times.scheduled.time24
 
+    if (estimated === undefined) return DelayStatus.ON_TIME
     if (estimated < scheduled) return DelayStatus.EARLY
     if (estimated > scheduled) return DelayStatus.DELAYED
     return DelayStatus.ON_TIME

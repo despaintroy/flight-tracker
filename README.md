@@ -4,11 +4,10 @@
 
 ### Followed Flights
 
-- Departure, arrival, delay, baggage
 - Follow my flight
 - Favorite flights
 - Handle diverted messaging
-- Nice UI for departure/arrival
+- Progress in current flight (time to arrival)
 
 ### Info
 
@@ -17,6 +16,9 @@
 - Height above nearest airport
 - Explore more flight stats APIs
 - Details from FAA delays, times
+- Refresh interval
+- FAA Airport Info – https://www.fly.faa.gov/flyfaa/AirportLookup.jsp?q=sfo&go=1
+- https://airlabs.co/docs/flight
 
 ### PWA
 

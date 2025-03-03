@@ -17,8 +17,6 @@
 - Explore more flight stats APIs
 - Details from FAA delays, times
 - Refresh interval
-- FAA Airport Info – https://www.fly.faa.gov/flyfaa/AirportLookup.jsp?q=sfo&go=1
-- https://airlabs.co/docs/flight
 
 ### PWA
 
@@ -40,4 +38,9 @@
 - https://github.com/wiedehopf/tar1090/blob/25db2f151653a6ebcbcbb65150cedfc498eee816/html/markers.js
 - https://github.com/evilsaloon/flightstats-web-api
 - https://developers.amadeus.com/pricing
+- FAA Airport Info – https://www.fly.faa.gov/flyfaa/AirportLookup.jsp?q=sfo&go=1
+- https://airlabs.co/docs/flight
+- https://www.flightradar24.com/webapi/v1/airport-disruptions
+- https://www.flightaware.com/ajax/ignoreall/miserymap/realtime.rvt?type=us
+- https://www.fly.faa.gov/flyfaa/AirportLookup.jsp?q=sfo
 

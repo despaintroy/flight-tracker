@@ -9,7 +9,8 @@ import {Stack, Typography} from "@mui/joy"
 import {ChevronRight} from "@mui/icons-material"
 
 const formatTime = (time: ScheduleTimes | EstimatedActualTime) => {
-  return `${time.time} ${time.ampm?.toLowerCase()}`
+  if (!time.time) return "–"
+  return `${time.time} ${time.ampm?.toLowerCase() ?? ""}`
 }
 
 enum DelayStatus {
@@ -41,14 +42,14 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
   const isActual = times.estimatedActual.title === "Actual"
 
   const gateLabel = (() => {
-    if (!gate && !terminal) return "–"
+    if (!gate && !terminal) return "No gate info"
     if (terminal && !gate) return `Terminal ${terminal}`
     if (gate && !terminal) return `Gate ${gate}`
-    return `Gate ${gate} (Terminal ${terminal})`
+    return `Gate ${gate} (T${terminal})`
   })()
 
   return (
-    <Stack>
+    <Stack sx={{flexGrow: 1}}>
       <Typography
         fontSize={24}
         fontWeight={800}
@@ -61,29 +62,36 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
         {city}, {state}
       </Typography>
 
-      <Stack direction="row" justifyContent="center" gap={1}>
-        {delayStatus !== DelayStatus.ON_TIME && (
+      <Stack direction="row" justifyContent="center" gap={1} mb={1}>
+        {(delayStatus !== DelayStatus.ON_TIME ||
+          !times.estimatedActual.time) && (
           <Typography
             sx={{color: "neutral.plainDisabledColor"}}
             lineHeight={1.2}
             noWrap
+            style={{
+              textDecoration: times.estimatedActual.time
+                ? "line-through"
+                : undefined
+            }}
           >
-            <s>{formatTime(times.scheduled)}</s>
+            {times.scheduled.time}
           </Typography>
         )}
-        <Typography
-          sx={{
-            color:
-              delayStatus === DelayStatus.DELAYED
-                ? "danger.plainColor"
-                : "success.plainColor"
-          }}
-          lineHeight={1.2}
-          mb={1}
-          noWrap
-        >
-          {formatTime(times.estimatedActual)} {isActual ? null : " (est)"}
-        </Typography>
+        {times.estimatedActual.time ? (
+          <Typography
+            sx={{
+              color:
+                delayStatus === DelayStatus.DELAYED
+                  ? "danger.plainColor"
+                  : "success.plainColor"
+            }}
+            lineHeight={1.2}
+            noWrap
+          >
+            {formatTime(times.estimatedActual)} {isActual ? null : " (est)"}
+          </Typography>
+        ) : null}
       </Stack>
 
       <Typography lineHeight={1.2}>{gateLabel}</Typography>

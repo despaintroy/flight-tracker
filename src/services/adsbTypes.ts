@@ -2,12 +2,12 @@
 
 export const CATEGORY_DESCRIPTIONS = new Map([
   ["A0", "No ADS-B emitter category information"],
-  ["A1", "Light (< 15500 lbs)"],
-  ["A2", "Small (15,500 to 75,000 lbs)"],
-  ["A3", "Large (75,000 to 300,000 lbs)"],
-  ["A4", "Large high vortex (75,000 to 300,000 lbs)"],
-  ["A5", "Heavy (> 300,000 lbs)"],
-  ["A6", "High performance (> 5g acceleration and 400 kts)"],
+  ["A1", "Light"],
+  ["A2", "Small"],
+  ["A3", "Large"],
+  ["A4", "Large high vortex"],
+  ["A5", "Heavy"],
+  ["A6", "High performance"],
   ["A7", "Rotorcraft"],
   ["B0", "No ADS-B emitter category information"],
   ["B1", "Glider / sailplane"],

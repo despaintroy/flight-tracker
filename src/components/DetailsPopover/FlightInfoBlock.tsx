@@ -45,7 +45,7 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
     if (!gate && !terminal) return "No gate info"
     if (terminal && !gate) return `Terminal ${terminal}`
     if (gate && !terminal) return `Gate ${gate}`
-    return `Gate ${gate} (T${terminal})`
+    return `Gate ${gate} (T-${terminal})`
   })()
 
   return (
@@ -89,7 +89,7 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
             lineHeight={1.2}
             noWrap
           >
-            {formatTime(times.estimatedActual)} {isActual ? null : " (est)"}
+            {formatTime(times.estimatedActual)}
           </Typography>
         ) : null}
       </Stack>

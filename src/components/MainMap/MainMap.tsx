@@ -9,11 +9,35 @@ import AircraftLayers from "@/components/MainMap/layers/AircraftLayers"
 import {useOnLoadMap} from "@/components/MainMap/mainMapHelpers"
 import AircraftPathsLayer from "@/components/MainMap/layers/AircraftPathsLayer"
 import FilterModal from "@/components/FilterModal"
-import useViewState from "@/lib/hooks/useViewState"
+import {z} from "zod"
+import {COORDINATES} from "@/lib/constants"
+import {useStorageState} from "@/lib/hooks/useStorageState"
+
+const APP_VIEW_STATE_SCHEMA = z.object({
+  longitude: z.number(),
+  latitude: z.number(),
+  zoom: z.number(),
+  bearing: z.number(),
+  pitch: z.number()
+})
+
+export type AppViewState = z.infer<typeof APP_VIEW_STATE_SCHEMA>
+
+export const DEFAULT_VIEW_STATE: AppViewState = {
+  longitude: COORDINATES.slc.lon,
+  latitude: COORDINATES.slc.lat,
+  zoom: 10,
+  bearing: 0,
+  pitch: 0
+}
 
 const MainMap: FC = () => {
   const mapRef = useRef<MapRef>(null)
-  const [viewState, setViewState] = useViewState()
+  const [viewState, setViewState] = useStorageState<AppViewState>({
+    key: "view_state",
+    defaultValue: DEFAULT_VIEW_STATE,
+    schema: APP_VIEW_STATE_SCHEMA
+  })
   const [selectedHex, setSelectedHex] = useState<string | null>(null)
   const onLoadMap = useOnLoadMap({setSelectedHex})
 

@@ -14,8 +14,9 @@ export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
 
   const flightStatsQueryResult = useQuery({
     queryKey: ["flightStatsTracker", params],
-    queryFn: () => getFlightStatsTracker(params)
-    // staleTime: Infinity
+    queryFn: () => getFlightStatsTracker(params),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true
   })
 
   useEffect(() => {

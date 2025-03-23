@@ -20,6 +20,8 @@ export const useStorageState = <T>({
   debounce = 500
 }: UseStorageState<T>) => {
   const [state, setState] = useState(() => {
+    if (typeof window === "undefined") return defaultValue
+
     const value = localStorage.getItem(key)
     if (!value) return defaultValue
     try {

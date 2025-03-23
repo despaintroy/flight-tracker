@@ -15,19 +15,24 @@ import LOCAL_AIRCRAFT_DB, {HistoryItem} from "@/services/localAircraftDB"
 import {Coordinate, DEFAULT_FETCH_RADIUS_NM} from "@/lib/constants"
 import {ADSB} from "@/services/adsb"
 import usePageVisibility from "@/lib/hooks/usePageVisibility"
+import {useUrlParamState} from "@/lib/hooks/useUrlParamState"
+import {z} from "zod"
 
 const AIRCRAFT_MAP_STALE_TIME = 1000 * 60 * 5 // 5 minutes
 
-export type ADSBFetchType =
-  | {type: "radius"}
-  | {type: "mil"}
-  | {type: "ladd"}
-  | {type: "pia"}
-  | {type: "hex"; hex: string}
-  | {type: "callsign"; callsign: string}
-  | {type: "registration"; registration: string}
-  | {type: "type"; aircraftType: string}
-  | {type: "squawk"; squawk: string}
+const ADSB_FETCH_TYPE_SCHEMA = z.union([
+  z.object({type: z.literal("radius")}),
+  z.object({type: z.literal("mil")}),
+  z.object({type: z.literal("ladd")}),
+  z.object({type: z.literal("pia")}),
+  z.object({type: z.literal("hex"), hex: z.string()}),
+  z.object({type: z.literal("callsign"), callsign: z.string()}),
+  z.object({type: z.literal("registration"), registration: z.string()}),
+  z.object({type: z.literal("type"), aircraftType: z.string()}),
+  z.object({type: z.literal("squawk"), squawk: z.string()})
+])
+
+export type ADSBFetchType = z.infer<typeof ADSB_FETCH_TYPE_SCHEMA>
 
 export type AircraftWithHistory = {
   aircraft: AircraftData
@@ -61,7 +66,11 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const [activeHexes, setActiveHexes] = useState<string[]>([])
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null)
   const lastPurgeRef = useRef(Date.now())
-  const [fetchType, setFetchType] = useState<ADSBFetchType>({type: "radius"})
+  const [fetchType, setFetchType] = useUrlParamState<ADSBFetchType>({
+    key: "fetch_type",
+    defaultValue: {type: "radius"},
+    schema: ADSB_FETCH_TYPE_SCHEMA
+  })
   const [aircraftMap, setAircraftMap] = useState<AircraftWithHistoryMap>(
     new Map()
   )

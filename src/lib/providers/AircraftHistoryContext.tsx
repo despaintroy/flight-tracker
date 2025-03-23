@@ -69,7 +69,8 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
   const [fetchType, setFetchType] = useUrlParamState<ADSBFetchType>({
     key: "fetch_type",
     defaultValue: {type: "radius"},
-    schema: ADSB_FETCH_TYPE_SCHEMA
+    schema: ADSB_FETCH_TYPE_SCHEMA,
+    debounce: 50
   })
   const [aircraftMap, setAircraftMap] = useState<AircraftWithHistoryMap>(
     new Map()

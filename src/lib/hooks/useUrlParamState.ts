@@ -9,6 +9,7 @@ type UseUrlParamState<T> = {
   debounce?: number
   serialize?: (value: T) => string
   deserialize?: (value: string) => T
+  storeDefaultValue?: boolean
 }
 
 export const useUrlParamState = <T>({
@@ -17,9 +18,12 @@ export const useUrlParamState = <T>({
   schema,
   serialize = (value) => JSON.stringify(value),
   deserialize = (value) => JSON.parse(value),
-  debounce = 500
+  debounce = 500,
+  storeDefaultValue = false
 }: UseUrlParamState<T>) => {
   const [state, setState] = useState(() => {
+    if (typeof window === "undefined") return defaultValue
+
     const urlParams = new URLSearchParams(window.location.search)
     const value = urlParams.get(key)
     if (!value) return defaultValue
@@ -33,8 +37,16 @@ export const useUrlParamState = <T>({
   useDebounce(
     state,
     (value) => {
+      const serialized = serialize(value)
+      const serializedDefault = serialize(defaultValue)
       const urlParams = new URLSearchParams(window.location.search)
-      urlParams.set(key, serialize(value))
+
+      if (!storeDefaultValue && serialized === serializedDefault) {
+        urlParams.delete(key)
+      } else {
+        urlParams.set(key, serialized)
+      }
+
       window.history.replaceState({}, "", "?" + urlParams.toString())
     },
     debounce

@@ -109,7 +109,6 @@ type ArrivalDeparture = {
   trend: "Increasing" | "Decreasing"
 }
 
-export const getAirportEvents = async (): Promise<AirportEvent[]> => {
 export const getAirportEvents = async (): Promise<
   DeepNullable<AirportEvent>[]
 > => {

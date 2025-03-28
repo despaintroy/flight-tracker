@@ -30,16 +30,16 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
   // const isDelayed = times.estimatedActual.time24 > times.scheduled.time24
 
   const delayStatus = (() => {
-    const estimated = times.estimatedActual.time24
-    const scheduled = times.scheduled.time24
+    const estimated = times.estimatedActual?.time24
+    const scheduled = times.scheduled?.time24
 
-    if (estimated === undefined) return DelayStatus.ON_TIME
+    if (!estimated || !scheduled) return DelayStatus.ON_TIME
     if (estimated < scheduled) return DelayStatus.EARLY
     if (estimated > scheduled) return DelayStatus.DELAYED
     return DelayStatus.ON_TIME
   })()
 
-  const isActual = times.estimatedActual.title === "Actual"
+  const isActual = times.estimatedActual?.title === "Actual"
 
   const gateLabel = (() => {
     if (!gate && !terminal) return "No gate info"
@@ -63,22 +63,23 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
       </Typography>
 
       <Stack direction="row" justifyContent="center" gap={1} mb={1}>
-        {(delayStatus !== DelayStatus.ON_TIME ||
-          !times.estimatedActual.time) && (
+        {times.scheduled &&
+        (delayStatus !== DelayStatus.ON_TIME ||
+          !times.estimatedActual?.time) ? (
           <Typography
             sx={{color: "neutral.plainDisabledColor"}}
             lineHeight={1.2}
             noWrap
             style={{
-              textDecoration: times.estimatedActual.time
+              textDecoration: times.estimatedActual?.time
                 ? "line-through"
                 : undefined
             }}
           >
             {times.scheduled.time}
           </Typography>
-        )}
-        {times.estimatedActual.time ? (
+        ) : null}
+        {times.estimatedActual?.time ? (
           <Typography
             sx={{
               color:

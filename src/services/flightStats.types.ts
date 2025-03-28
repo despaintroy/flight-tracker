@@ -77,8 +77,8 @@ export type Airport = {
   terminal: string | null
   baggage?: string
   times: {
-    scheduled: ScheduleTimes
-    estimatedActual: EstimatedActualTime
+    scheduled?: ScheduleTimes
+    estimatedActual?: EstimatedActualTime
   }
   date: string
 }

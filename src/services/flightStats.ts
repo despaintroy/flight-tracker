@@ -5,7 +5,7 @@ import {parseCallsign} from "@/services/airlineCodes"
 import {FlightStatsTrackerData} from "./flightStats.types"
 
 type GetFlightStatsTrackerResponse = {
-  data: FlightStatsTrackerData | Record<string, never>
+  data: FlightStatsTrackerData
 }
 
 export type GetFlightStatsTrackerParams = {

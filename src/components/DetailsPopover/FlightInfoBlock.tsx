@@ -26,12 +26,12 @@ type AirportInfoProps = {
 const AirportInfo: FC<AirportInfoProps> = (props) => {
   const {times, gate, terminal, iata, city, state, baggage} = props.airport
 
-  // const isSame = times.scheduled.time24 === times.estimatedActual.time24
-  // const isDelayed = times.estimatedActual.time24 > times.scheduled.time24
+  // const isSame = times?.scheduled.time24 === times?.estimatedActual.time24
+  // const isDelayed = times?.estimatedActual.time24 > times?.scheduled.time24
 
   const delayStatus = (() => {
-    const estimated = times.estimatedActual?.time24
-    const scheduled = times.scheduled?.time24
+    const estimated = times?.estimatedActual?.time24
+    const scheduled = times?.scheduled?.time24
 
     if (!estimated || !scheduled) return DelayStatus.ON_TIME
     if (estimated < scheduled) return DelayStatus.EARLY
@@ -39,7 +39,7 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
     return DelayStatus.ON_TIME
   })()
 
-  const isActual = times.estimatedActual?.title === "Actual"
+  const isActual = times?.estimatedActual?.title === "Actual"
 
   const gateLabel = (() => {
     if (!gate && !terminal) return "No gate info"
@@ -63,23 +63,23 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
       </Typography>
 
       <Stack direction="row" justifyContent="center" gap={1} mb={1}>
-        {times.scheduled &&
+        {times?.scheduled &&
         (delayStatus !== DelayStatus.ON_TIME ||
-          !times.estimatedActual?.time) ? (
+          !times?.estimatedActual?.time) ? (
           <Typography
             sx={{color: "neutral.plainDisabledColor"}}
             lineHeight={1.2}
             noWrap
             style={{
-              textDecoration: times.estimatedActual?.time
+              textDecoration: times?.estimatedActual?.time
                 ? "line-through"
                 : undefined
             }}
           >
-            {times.scheduled.time}
+            {times?.scheduled.time}
           </Typography>
         ) : null}
-        {times.estimatedActual?.time ? (
+        {times?.estimatedActual?.time ? (
           <Typography
             sx={{
               color:
@@ -90,7 +90,7 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
             lineHeight={1.2}
             noWrap
           >
-            {formatTime(times.estimatedActual)}
+            {formatTime(times?.estimatedActual)}
           </Typography>
         ) : null}
       </Stack>
@@ -111,14 +111,16 @@ const FlightInfoBlock: FC<FlightInfoBlockProps> = (props) => {
   const {flightStats} = props
 
   const departureAirport = flightStats.departureAirport
-  const arrivalAirport = flightStats.arrivalAirport
-  const divertedAirport = flightStats.divertedAirport
+  const destinationAirport =
+    flightStats.divertedAirport ?? flightStats.arrivalAirport
+
+  if (!departureAirport || !destinationAirport) return null
 
   return (
     <Stack direction="row">
       <AirportInfo airport={departureAirport} />
       <ChevronRight sx={{fontSize: 36, marginTop: 1}} />
-      <AirportInfo airport={arrivalAirport} />
+      <AirportInfo airport={destinationAirport} />
     </Stack>
   )
 }

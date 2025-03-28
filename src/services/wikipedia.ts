@@ -1,6 +1,7 @@
 "use server"
 
 import axios from "axios"
+import {DeepNullable} from "@/lib/helpers"
 
 type WikiQueryResponse = {
   batchcomplete: string
@@ -10,12 +11,12 @@ type WikiQueryResponse = {
         pageid: number
         ns: number
         title: string
-        thumbnail?: {
+        thumbnail: {
           source: string
           width: number
           height: number
         }
-        pageimage?: string
+        pageimage: string
       }
     }
   }
@@ -35,8 +36,10 @@ export const getWikipediaMainImage = async (
   url.searchParams.append("formatversion", "2")
   url.searchParams.append("pithumbsize", size.toString())
 
-  const response = await axios.get<WikiQueryResponse>(url.toString())
-  const firstPage = Object.values(response.data.query.pages).at(0)
+  const response = await axios.get<DeepNullable<WikiQueryResponse>>(
+    url.toString()
+  )
+  const firstPage = Object.values(response.data.query?.pages ?? {}).at(0)
 
   return firstPage?.thumbnail
 }

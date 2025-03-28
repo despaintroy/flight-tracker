@@ -18,5 +18,5 @@ export const getFlightRoute = async (
     `https://api.adsbdb.com/v0/callsign/${callsign}`
   )
   if (typeof response.data.response === "string") return null
-  return response.data.response.flightroute ?? null
+  return response.data.response?.flightroute ?? null
 }

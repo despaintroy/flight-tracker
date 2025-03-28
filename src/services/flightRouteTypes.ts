@@ -1,17 +1,19 @@
-export type FlightRoute = {
+import {DeepNullable} from "@/lib/helpers"
+
+export type FlightRoute = DeepNullable<{
   callsign: string
 
-  callsign_icao: string | null
-  callsign_iata: string | null
+  callsign_icao: string
+  callsign_iata: string
 
   airline: {
     name: string
     icao: string
-    iata: string | null
+    iata: string
     country: string
     country_iso: string
-    callsign: string | null
-  } | null
+    callsign: string
+  }
 
   origin: {
     country_iso_name: string
@@ -36,8 +38,8 @@ export type FlightRoute = {
     municipality: string
     name: string
   }
-}
+}>
 
-export type FlightRouteResponse = {
+export type FlightRouteResponse = DeepNullable<{
   response: {flightroute: FlightRoute} | "unknown callsign"
-}
+}>

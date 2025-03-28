@@ -21,7 +21,7 @@ export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
 
   useEffect(() => {
     const positions =
-      flightStatsQueryResult.data?.positional.flexTrack.positions
+      flightStatsQueryResult.data?.positional?.flexTrack?.positions
 
     if (!positions?.length || !hex) return
 
@@ -34,6 +34,7 @@ export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
 
       for (const position of positions) {
         const {lat, lon, altitudeFt, date} = position
+        if (!lat || !lon || !date) continue
 
         // if some other history item within 30s, ignore
         const hasCloseHistory = newHistory.some(
@@ -45,7 +46,7 @@ export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
         newHistory.push({
           lat,
           lon,
-          alt_baro: altitudeFt,
+          alt_baro: altitudeFt ?? undefined,
           time: new Date(date).getTime()
         })
       }

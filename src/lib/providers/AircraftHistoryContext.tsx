@@ -109,15 +109,19 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
 
     const {ac: aircraft, now} = await adsbPromise
 
-    setActiveHexes(aircraft.map(({hex}) => hex))
+    setActiveHexes(
+      (aircraft ?? [])
+        .map(({hex}) => hex)
+        .filter((hex): hex is string => typeof hex === "string")
+    )
 
     setAircraftMap((prev) => {
       const newMap = new Map(prev)
 
-      aircraft.forEach((data) => {
+      aircraft?.forEach((data) => {
         const {hex, lat, lon, seen = 0} = data
 
-        if (!lat && !lon) return
+        if (!lat || !lon || !now || !seen || !hex) return
 
         const history = [...(prev.get(hex)?.history ?? [])]
         if (!history.length) history.push(...LOCAL_AIRCRAFT_DB.getHistory(hex))
@@ -125,7 +129,7 @@ export function AircraftHistoryProvider({children}: PropsWithChildren) {
         history.push({
           lat,
           lon,
-          alt_baro: data.alt_baro,
+          alt_baro: data.alt_baro ?? undefined,
           time: now - seen * 1000
         })
 

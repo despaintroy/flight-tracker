@@ -35,3 +35,11 @@ export const getFetchTypeLabel = (fetchType: ADSBFetchType): string | null => {
       return null
   }
 }
+
+export type DeepNullable<T> = {
+  [K in keyof T]?: T[K] extends (infer U)[]
+    ? DeepNullable<U>[] | null
+    : T[K] extends object
+      ? DeepNullable<T[K]> | null
+      : T[K] | null
+}

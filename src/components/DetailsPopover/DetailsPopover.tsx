@@ -31,12 +31,12 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     description: aircraft?.desc
   })
   const {data: flightRoute, isLoading: isLoadingFlightRoute} = useFlightRoute({
-    callsign: aircraft?.flight,
-    hex: aircraft?.hex
+    callsign: aircraft?.flight ?? undefined,
+    hex: aircraft?.hex ?? undefined
   })
   const {data: flightStats} = useFlightStatsTracker({
-    callsign: aircraft?.flight,
-    hex: aircraft?.hex
+    callsign: aircraft?.flight ?? undefined,
+    hex: aircraft?.hex ?? undefined
   })
 
   useEffect(() => {
@@ -64,6 +64,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const routeDescription = (() => {
     if (!flightStats) return null
     const {departureAirport, arrivalAirport} = flightStats
+    if (!departureAirport || !arrivalAirport) return null
     return `${departureAirport.city} (${departureAirport.iata}) → ${arrivalAirport.city} (${arrivalAirport.iata})`
   })()
 
@@ -94,7 +95,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
             </Box>
           ) : (
             <img
-              src={image.src}
+              src={image.src ?? undefined}
               alt=""
               style={{
                 objectFit: "contain",

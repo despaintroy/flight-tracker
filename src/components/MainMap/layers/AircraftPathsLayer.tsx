@@ -3,7 +3,7 @@ import {FC, useMemo} from "react"
 import {Layer, Source} from "react-map-gl"
 import {LayerID} from "@/components/MainMap/mainMapHelpers"
 import {AircraftWithHistory} from "@/lib/providers/AircraftHistoryContext"
-import {GeoJSON} from "geojson"
+import {Feature, GeoJSON} from "geojson"
 
 type AircraftPathsLayerProps = {
   aircraftWithHistories: AircraftWithHistory[]
@@ -13,29 +13,34 @@ type AircraftPathsLayerProps = {
 const AircraftPathsLayer: FC<AircraftPathsLayerProps> = (props) => {
   const {aircraftWithHistories, selectedHex} = props
 
-  const aircraftHistoriesGeoJSON = useMemo<GeoJSON>(() => {
+  const aircraftHistoriesGeoJSON = useMemo((): GeoJSON => {
     const limit = Date.now() - 30_000 // 30 seconds ago
 
     return {
       type: "FeatureCollection",
-      features: aircraftWithHistories.map(({aircraft, history}) => {
-        const limitedHistory =
-          aircraft.hex === selectedHex
-            ? history
-            : history.filter(({time}) => time > limit)
+      features: aircraftWithHistories.reduce<Feature[]>(
+        (acc, {aircraft, history}) => {
+          const limitedHistory =
+            aircraft.hex === selectedHex
+              ? history
+              : history.filter(({time}) => time > limit)
 
-        return {
-          id: aircraft.hex,
-          type: "Feature",
-          geometry: {
-            type: "LineString",
-            coordinates: limitedHistory.map(({lon, lat}) => [lon, lat])
-          },
-          properties: {
-            hex: aircraft.hex
-          }
-        }
-      })
+          acc.push({
+            id: aircraft.hex ?? undefined,
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: limitedHistory.map(({lon, lat}) => [lon, lat])
+            },
+            properties: {
+              hex: aircraft.hex
+            }
+          })
+
+          return acc
+        },
+        []
+      )
     }
   }, [aircraftWithHistories, selectedHex])
 

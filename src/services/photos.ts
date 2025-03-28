@@ -3,13 +3,14 @@
 import wikipedia from "wikipedia"
 import {getWikipediaMainImage} from "@/services/wikipedia"
 import axios from "axios"
+import {DeepNullable} from "@/lib/helpers"
 
-export type Photo = {
+export type Photo = DeepNullable<{
   src: string
-  width?: number
-  height?: number
-  attribution?: string
-}
+  width: number
+  height: number
+  attribution: string
+}>
 
 type PlaneSpottersThumbnail = {
   src: string
@@ -19,7 +20,7 @@ type PlaneSpottersThumbnail = {
   }
 }
 
-export type PlaneSpottersResponse = {
+export type PlaneSpottersResponse = DeepNullable<{
   photos: Array<{
     id: string
     thumbnail: PlaneSpottersThumbnail
@@ -27,13 +28,13 @@ export type PlaneSpottersResponse = {
     link: string
     photographer: string
   }>
-}
+}>
 
-export type GetPhotosParams = {
-  hex: string | undefined
-  description: string | undefined
-  icaoType: string | undefined
-}
+export type GetPhotosParams = DeepNullable<{
+  hex: string
+  description: string
+  icaoType: string
+}>
 
 export const getPhotos = async (params: GetPhotosParams): Promise<Photo[]> => {
   const {hex, icaoType, description} = params
@@ -43,14 +44,14 @@ export const getPhotos = async (params: GetPhotosParams): Promise<Photo[]> => {
     const planeSpottersResponse = await axios.get<PlaneSpottersResponse>(
       `https://api.planespotters.net/pub/photos/hex/${hex}`
     )
-    if (!planeSpottersResponse.data.photos.length) break searchPlaneSpotters
+    if (!planeSpottersResponse.data.photos?.length) break searchPlaneSpotters
 
     return planeSpottersResponse.data.photos.map((photo) => {
-      const {src, size} = photo.thumbnail_large ?? photo.thumbnail
+      const {src, size} = photo.thumbnail_large ?? photo.thumbnail ?? {}
       return {
         src,
-        width: size.width,
-        height: size.height
+        width: size?.width,
+        height: size?.height
         // attribution: `${photo.photographer} via PlaneSpotters.net`
       }
     })

@@ -1,6 +1,6 @@
 import * as React from "react"
 import {FC, useMemo} from "react"
-import {GeoJSON} from "geojson"
+import {Feature, GeoJSON} from "geojson"
 import {AircraftWithHistory} from "@/lib/providers/AircraftHistoryContext"
 import {Layer, Source} from "react-map-gl"
 import {SymbolLayerSpecification} from "mapbox-gl"
@@ -18,22 +18,28 @@ type AircraftLayersProps = {
 const AircraftLayers: FC<AircraftLayersProps> = (props) => {
   const {aircraftWithHistories, selectedHex} = props
 
-  const airplanesGeoJSON = useMemo<GeoJSON>(() => {
+  const airplanesGeoJSON = useMemo((): GeoJSON => {
     return {
       type: "FeatureCollection",
-      features: aircraftWithHistories.map(({aircraft}) => ({
-        id: aircraft.hex,
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [aircraft.lon, aircraft.lat]
-        },
-        properties: {
-          rotation: aircraft.track ?? aircraft.true_heading ?? 0,
-          hex: aircraft.hex,
-          icon: getAircraftIcon(aircraft)
-        }
-      }))
+      features: aircraftWithHistories.reduce<Feature[]>((acc, {aircraft}) => {
+        if (!aircraft.lat || !aircraft.lon) return acc
+
+        acc.push({
+          id: aircraft.hex ?? undefined,
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [aircraft.lon, aircraft.lat]
+          },
+          properties: {
+            rotation: aircraft.track ?? aircraft.true_heading ?? 0,
+            hex: aircraft.hex,
+            icon: getAircraftIcon(aircraft)
+          }
+        })
+
+        return acc
+      }, [])
     }
   }, [aircraftWithHistories])
 

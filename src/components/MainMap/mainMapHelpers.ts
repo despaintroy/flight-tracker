@@ -18,8 +18,9 @@ export enum IconID {
 export const getAircraftIcon = (aircraft: AircraftData): IconID => {
   if (aircraft.category === "C1" || aircraft.category === "C2")
     return IconID.Vehicle
-  if (/^[AB]/.test(aircraft.hex)) return IconID.Airplane
-  if (aircraft.hex.startsWith("~")) return IconID.Square
+  if (typeof aircraft.hex === "string" && /^[AB]/.test(aircraft.hex))
+    return IconID.Airplane
+  if (aircraft.hex?.startsWith("~")) return IconID.Square
   return IconID.Airplane
 }
 

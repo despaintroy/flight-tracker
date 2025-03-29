@@ -74,6 +74,4 @@ export type FlightStatsSearchResult = DeepNullable<{
   _id: string
   _score: number
   _source: FlightSource
-}
-}>
 }>

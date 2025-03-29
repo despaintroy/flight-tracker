@@ -1,73 +1,54 @@
 import {useQuery} from "@tanstack/react-query"
-import {
-  getFlightStatsTracker,
-  GetFlightStatsTrackerParams
-} from "@/services/flightStatsTracker"
+import {getFlightStatsTracker, GetFlightStatsTrackerParams} from "@/services/flightStatsTracker"
 import {getPhotos, GetPhotosParams} from "@/services/photos"
 import {getFlightRoute, GetFlightRouteParams} from "@/services/flightRoute"
-import {useContext, useEffect} from "react"
-import {AircraftHistoryContext} from "@/lib/providers/AircraftHistoryContext"
-import {
-  getFlightStatsSearch,
-  GetFlightStatsSearchParams
-} from "@/services/flightStatsSearch"
+import {useEffect} from "react"
+import {getFlightStatsSearch, GetFlightStatsSearchParams} from "@/services/flightStatsSearch"
+import {getFlightStatsInformation, GetFlightStatsInformationParams} from "@/services/flightStatsInformation"
+import {useAddPositions} from "@/lib/hooks/useAddPositions"
 
 /** @deprecated can return wrong flight segment */
 export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
-  const {hex} = params
-  const {setAircraftMap} = useContext(AircraftHistoryContext)
+  const addPositions = useAddPositions(params.hex)
 
-  const flightStatsQueryResult = useQuery({
+  const flightStatsTrackerQueryResult = useQuery({
     queryKey: ["flightStatsTracker", params],
     queryFn: () => getFlightStatsTracker(params),
     refetchInterval: 30_000,
     refetchOnWindowFocus: true
   })
 
+  const positions =
+    flightStatsTrackerQueryResult.data?.positional?.flexTrack?.positions ??
+    undefined
+
   useEffect(() => {
-    const positions =
-      flightStatsQueryResult.data?.positional?.flexTrack?.positions
+    addPositions(positions)
+  }, [addPositions, positions])
 
-    if (!positions?.length || !hex) return
+  return flightStatsTrackerQueryResult
+}
 
-    setAircraftMap((prev) => {
-      const newMap = new Map(prev)
-      const prevAircraftWithHistory = prev.get(hex)
-      if (!prevAircraftWithHistory) return newMap
+export const useFlightStatsInformation = (
+  params: GetFlightStatsInformationParams
+) => {
+  const addPositions = useAddPositions(params.hex)
 
-      const newHistory = [...prevAircraftWithHistory.history]
+  const flightStatsInformationQueryResult = useQuery({
+    queryKey: ["flightStatsInformation", params],
+    queryFn: () => getFlightStatsInformation(params),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true
+  })
 
-      for (const position of positions) {
-        const {lat, lon, altitudeFt, date} = position
-        if (!lat || !lon || !date) continue
+  const positions =
+    flightStatsInformationQueryResult.data?.positions ?? undefined
 
-        // if some other history item within 30s, ignore
-        const hasCloseHistory = newHistory.some(
-          (history) =>
-            Math.abs(history.time - new Date(date).getTime()) < 30 * 1000
-        )
-        if (hasCloseHistory) continue
+  useEffect(() => {
+    addPositions(positions)
+  }, [addPositions, positions])
 
-        newHistory.push({
-          lat,
-          lon,
-          alt_baro: altitudeFt ?? undefined,
-          time: new Date(date).getTime()
-        })
-      }
-
-      newHistory.sort((a, b) => a.time - b.time)
-
-      newMap.set(hex, {
-        ...prevAircraftWithHistory,
-        history: newHistory
-      })
-
-      return newMap
-    })
-  }, [flightStatsQueryResult.data, hex, setAircraftMap])
-
-  return flightStatsQueryResult
+  return flightStatsInformationQueryResult
 }
 
 export const useFlightStatsSearch = (params: GetFlightStatsSearchParams) => {

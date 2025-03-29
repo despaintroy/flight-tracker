@@ -16,7 +16,7 @@ export type InformationAirport = DeepNullable<{
   conditionIcon: string
 }>
 
-type Position = {
+export type Position = DeepNullable<{
   lon: number
   lat: number
   speedMph: number
@@ -26,33 +26,7 @@ type Position = {
   course: number
   vrateMps: number
   lastObserved: string
-}
-
-type FlexTrack = {
-  flightId: number
-  carrierFsCode: string
-  flightNumber: string
-  tailNumber: string
-  callsign: string
-  departureAirportFsCode: string
-  arrivalAirportFsCode: string
-  departureDate: {dateUtc: string; dateLocal: string}
-  equipment: string
-  delayMinutes: number
-  bearing: number
-  heading: number
-  positions: Position[]
-  irregularOperations: any[]
-  fleetAircraftId: number
-}
-
-type Positional = {
-  departureAirportCode: string
-  arrivalAirportCode: string
-  divertedAirportCode: string
-  flexFlightStatus: string
-  flexTrack: FlexTrack
-}
+}>
 
 type OperationalTime = {
   departureTime: number

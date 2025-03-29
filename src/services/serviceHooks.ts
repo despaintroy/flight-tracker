@@ -2,7 +2,7 @@ import {useQuery} from "@tanstack/react-query"
 import {
   getFlightStatsTracker,
   GetFlightStatsTrackerParams
-} from "@/services/flightStats"
+} from "@/services/flightStatsTracker"
 import {getPhotos, GetPhotosParams} from "@/services/photos"
 import {getFlightRoute, GetFlightRouteParams} from "@/services/flightRoute"
 import {useContext, useEffect} from "react"

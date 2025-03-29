@@ -3,7 +3,7 @@ import {
   EstimatedActualTime,
   FlightStatsTrackerData,
   ScheduleTimes
-} from "@/services/flightStats.types"
+} from "@/services/flightStatsTracker.types"
 import {FC} from "react"
 import {Stack, Typography} from "@mui/joy"
 import {ChevronRight} from "@mui/icons-material"
@@ -21,10 +21,12 @@ enum DelayStatus {
 
 type AirportInfoProps = {
   airport: Airport
+  type: "departure" | "arrival"
 }
 
 const AirportInfo: FC<AirportInfoProps> = (props) => {
-  const {times, gate, terminal, iata, city, state, baggage} = props.airport
+  const {type, airport} = props
+  const {times, gate, terminal, iata, city, state, baggage} = airport
 
   // const isSame = times?.scheduled.time24 === times?.estimatedActual.time24
   // const isDelayed = times?.estimatedActual.time24 > times?.scheduled.time24
@@ -53,16 +55,24 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
       <Typography
         fontSize={24}
         fontWeight={800}
-        textAlign="center"
+        textAlign={type === "departure" ? "left" : "right"}
         lineHeight={1.2}
       >
         {iata}
       </Typography>
-      <Typography textAlign="center" level="body-sm">
+      <Typography
+        textAlign={type === "departure" ? "left" : "right"}
+        level="body-sm"
+      >
         {city}, {state}
       </Typography>
 
-      <Stack direction="row" justifyContent="center" gap={1} mb={1}>
+      <Stack
+        direction="row"
+        justifyContent={type === "departure" ? "flex-start" : "flex-end"}
+        gap={1}
+        mb={1}
+      >
         {times?.scheduled &&
         (delayStatus !== DelayStatus.ON_TIME ||
           !times?.estimatedActual?.time) ? (
@@ -95,9 +105,19 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
         ) : null}
       </Stack>
 
-      <Typography lineHeight={1.2}>{gateLabel}</Typography>
+      <Typography
+        lineHeight={1.2}
+        textAlign={type === "departure" ? "left" : "right"}
+      >
+        {gateLabel}
+      </Typography>
       {baggage ? (
-        <Typography lineHeight={1.2}>Carousel {baggage}</Typography>
+        <Typography
+          lineHeight={1.2}
+          textAlign={type === "departure" ? "left" : "right"}
+        >
+          Carousel {baggage}
+        </Typography>
       ) : null}
     </Stack>
   )
@@ -118,9 +138,9 @@ const FlightInfoBlock: FC<FlightInfoBlockProps> = (props) => {
 
   return (
     <Stack direction="row">
-      <AirportInfo airport={departureAirport} />
+      <AirportInfo airport={departureAirport} type="departure" />
       <ChevronRight sx={{fontSize: 36, marginTop: 1}} />
-      <AirportInfo airport={destinationAirport} />
+      <AirportInfo airport={destinationAirport} type="arrival" />
     </Stack>
   )
 }

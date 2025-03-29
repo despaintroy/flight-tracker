@@ -2,7 +2,7 @@
 
 import axios from "axios"
 import {parseCallsign} from "@/services/airlineCodes"
-import {FlightStatsTrackerData} from "./flightStats.types"
+import {FlightStatsTrackerData} from "./flightStatsTracker.types"
 
 type GetFlightStatsTrackerResponse = {
   data: FlightStatsTrackerData

@@ -7,6 +7,10 @@ import {getPhotos, GetPhotosParams} from "@/services/photos"
 import {getFlightRoute, GetFlightRouteParams} from "@/services/flightRoute"
 import {useContext, useEffect} from "react"
 import {AircraftHistoryContext} from "@/lib/providers/AircraftHistoryContext"
+import {
+  getFlightStatsSearch,
+  GetFlightStatsSearchParams
+} from "@/services/flightStatsSearch"
 
 export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
   const {hex} = params
@@ -65,6 +69,15 @@ export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
   return flightStatsQueryResult
 }
 
+export const useFlightStatsSearch = (params: GetFlightStatsSearchParams) => {
+  return useQuery({
+    queryKey: ["flightStatsSearch", params],
+    queryFn: () => getFlightStatsSearch(params),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true
+  })
+}
+
 export const usePhotos = (params: GetPhotosParams) => {
   return useQuery({
     queryKey: ["photos", params],
@@ -73,6 +86,7 @@ export const usePhotos = (params: GetPhotosParams) => {
   })
 }
 
+/** @deprecated for out-of-date info */
 export const useFlightRoute = (params: GetFlightRouteParams) => {
   return useQuery({
     queryKey: ["flightRoute", params],

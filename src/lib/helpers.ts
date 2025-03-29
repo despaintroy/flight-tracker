@@ -43,3 +43,12 @@ export type DeepNullable<T> = {
       ? DeepNullable<T[K]> | null
       : T[K] | null
 }
+
+export const generateRandomString = (length = 10) => {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+  let result = ""
+  for (let i = 0; i < length; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return result
+}

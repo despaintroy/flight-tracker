@@ -1,3 +1,5 @@
+import {DeepNullable} from "@/lib/helpers"
+
 type CodeShare = {
   carrier: string
   trafficRestriction: string
@@ -66,10 +68,11 @@ type FlightSource = {
   delayMinutesArrival: number
 }
 
-type FlightStatsSearchResult = {
+export type FlightStatsSearchResult = DeepNullable<{
   _index: string
   _type: string
   _id: string
   _score: number
   _source: FlightSource
 }
+}>

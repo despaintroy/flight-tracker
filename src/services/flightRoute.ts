@@ -8,6 +8,7 @@ export type GetFlightRouteParams = {
   hex: string | undefined
 }
 
+/** @deprecated for out-of-date info */
 export const getFlightRoute = async (
   params: GetFlightRouteParams
 ): Promise<FlightRoute | null> => {

@@ -13,7 +13,7 @@ import {Flight, Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
 import wikipedia from "wikipedia"
 import {
-  useFlightRoute,
+  useFlightStatsSearch,
   useFlightStatsTracker,
   usePhotos
 } from "@/services/serviceHooks"
@@ -30,18 +30,24 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     icaoType: aircraft?.t,
     description: aircraft?.desc
   })
-  const {data: flightRoute, isLoading: isLoadingFlightRoute} = useFlightRoute({
-    callsign: aircraft?.flight ?? undefined,
-    hex: aircraft?.hex ?? undefined
-  })
-  const {data: flightStats} = useFlightStatsTracker({
-    callsign: aircraft?.flight ?? undefined,
-    hex: aircraft?.hex ?? undefined
+  const {data: flightStatsTracker, isLoading: isLoadingFlightStatsTracker} =
+    useFlightStatsTracker({
+      callsign: aircraft?.flight ?? undefined,
+      hex: aircraft?.hex ?? undefined
+    })
+  const {data: flightStatsSearch} = useFlightStatsSearch({
+    search: aircraft?.flight ?? undefined
   })
 
   useEffect(() => {
-    if (flightStats) console.debug("[flight-stats]", flightStats)
-  }, [flightStats])
+    if (flightStatsTracker)
+      console.debug("[flight-stats-tracker]", flightStatsTracker)
+  }, [flightStatsTracker])
+
+  useEffect(() => {
+    if (flightStatsSearch)
+      console.debug("[flight-stats-search]", flightStatsSearch)
+  }, [flightStatsSearch])
 
   useEffect(() => {
     if (aircraft) console.debug("[aircraft-data]", aircraft)
@@ -62,10 +68,20 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const image = images?.at(0)
 
   const routeDescription = (() => {
-    if (!flightStats) return null
-    const {departureAirport, arrivalAirport} = flightStats
+    if (!flightStatsTracker) return null
+    const {departureAirport, arrivalAirport} = flightStatsTracker
     if (!departureAirport || !arrivalAirport) return null
     return `${departureAirport.city} (${departureAirport.iata}) → ${arrivalAirport.city} (${arrivalAirport.iata})`
+  })()
+
+  const flightNumberDisplay = (() => {
+    if (isLoadingFlightStatsTracker) return "–"
+
+    const carrierString = [
+      flightStatsTracker?.resultHeader?.carrier?.fs ?? "",
+      flightStatsTracker?.resultHeader?.flightNumber ?? ""
+    ].join("")
+    return carrierString || aircraft.flight?.trim()
   })()
 
   return (
@@ -123,16 +139,19 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
 
       <Typography level="body-xs">
         {[
-          aircraft.flight?.trim(),
-          isLoadingFlightRoute
+          flightNumberDisplay,
+          isLoadingFlightStatsTracker
             ? null
-            : (flightRoute?.airline?.name ?? aircraft.ownOp)
+            : flightStatsTracker?.resultHeader?.carrier?.name || aircraft.ownOp
         ]
           .filter(Boolean)
           .join(" – ") || "No operator information"}
       </Typography>
       <Typography level="title-lg">
-        {aircraft.desc ?? aircraft.t ?? "Unknown aircraft"}
+        {aircraft.desc ||
+          flightStatsTracker?.additionalFlightInfo?.equipment?.name ||
+          aircraft.t ||
+          "Unknown aircraft"}
       </Typography>
       {routeDescription ? (
         <Typography level="body-md">{routeDescription}</Typography>
@@ -164,10 +183,10 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
         </Typography>
       ) : null}
 
-      {flightStats ? (
+      {flightStatsTracker ? (
         <>
           <Divider sx={{my: 2}} />
-          <FlightInfoBlock flightStats={flightStats} />
+          <FlightInfoBlock flightStats={flightStatsTracker} />
         </>
       ) : null}
     </Sheet>

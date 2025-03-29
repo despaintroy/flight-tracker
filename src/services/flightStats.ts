@@ -35,5 +35,5 @@ export const getFlightStatsTracker = async (
 
   // if empty object, return null
   if (!Object.keys(trackerData).length) return null
-  return trackerData as FlightStatsTrackerData
+  return trackerData
 }

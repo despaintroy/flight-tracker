@@ -13,6 +13,7 @@ export type GetFlightStatsTrackerParams = {
   hex: string | undefined
 }
 
+/** @deprecated can return wrong flight segment */
 export const getFlightStatsTracker = async (
   params: GetFlightStatsTrackerParams
 ): Promise<FlightStatsTrackerData | null> => {

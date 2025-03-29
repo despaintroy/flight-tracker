@@ -30,14 +30,15 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     icaoType: aircraft?.t,
     description: aircraft?.desc
   })
-  const {data: flightStatsTracker, isLoading: isLoadingFlightStatsTracker} =
-    useFlightStatsTracker({
-      callsign: aircraft?.flight ?? undefined,
-      hex: aircraft?.hex ?? undefined
-    })
-  const {data: flightStatsSearch} = useFlightStatsSearch({
-    search: aircraft?.flight ?? undefined
+  const {data: flightStatsTracker} = useFlightStatsTracker({
+    callsign: aircraft?.flight ?? undefined,
+    hex: aircraft?.hex ?? undefined
   })
+  const {data: flightStatsSearch, isLoading: isLoadingFlightStatsSearchResult} =
+    useFlightStatsSearch({
+      search: aircraft?.flight ?? undefined
+    })
+  const flightStatsSearchResult = flightStatsSearch?.at(0)?._source
 
   useEffect(() => {
     if (flightStatsTracker)
@@ -68,18 +69,23 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
   const image = images?.at(0)
 
   const routeDescription = (() => {
-    if (!flightStatsTracker) return null
-    const {departureAirport, arrivalAirport} = flightStatsTracker
-    if (!departureAirport || !arrivalAirport) return null
-    return `${departureAirport.city} (${departureAirport.iata}) → ${arrivalAirport.city} (${arrivalAirport.iata})`
+    if (!flightStatsSearchResult) return null
+    const {
+      departureAirportCity,
+      departureAirport,
+      arrivalAirportCity,
+      arrivalAirport
+    } = flightStatsSearchResult
+
+    return `${departureAirportCity} (${departureAirport}) → ${arrivalAirportCity} (${arrivalAirport})`
   })()
 
   const flightNumberDisplay = (() => {
-    if (isLoadingFlightStatsTracker) return "–"
+    if (isLoadingFlightStatsSearchResult) return "–"
 
     const carrierString = [
-      flightStatsTracker?.resultHeader?.carrier?.fs ?? "",
-      flightStatsTracker?.resultHeader?.flightNumber ?? ""
+      flightStatsSearchResult?.carrier ?? "",
+      flightStatsSearchResult?.flightNumber ?? ""
     ].join("")
     return carrierString || aircraft.flight?.trim()
   })()
@@ -140,9 +146,9 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       <Typography level="body-xs">
         {[
           flightNumberDisplay,
-          isLoadingFlightStatsTracker
+          isLoadingFlightStatsSearchResult
             ? null
-            : flightStatsTracker?.resultHeader?.carrier?.name || aircraft.ownOp
+            : flightStatsSearchResult?.carrierName || aircraft.ownOp
         ]
           .filter(Boolean)
           .join(" – ") || "No operator information"}
@@ -151,7 +157,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
         {aircraft.desc ||
           flightStatsTracker?.additionalFlightInfo?.equipment?.name ||
           aircraft.t ||
-          "Unknown aircraft"}
+          "Unknown type"}
       </Typography>
       {routeDescription ? (
         <Typography level="body-md">{routeDescription}</Typography>

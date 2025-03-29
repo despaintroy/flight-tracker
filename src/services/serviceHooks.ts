@@ -12,6 +12,7 @@ import {
   GetFlightStatsSearchParams
 } from "@/services/flightStatsSearch"
 
+/** @deprecated can return wrong flight segment */
 export const useFlightStatsTracker = (params: GetFlightStatsTrackerParams) => {
   const {hex} = params
   const {setAircraftMap} = useContext(AircraftHistoryContext)

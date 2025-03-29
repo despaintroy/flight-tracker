@@ -1,6 +1,7 @@
-import {Dispatch, SetStateAction, useCallback} from "react"
+import {useCallback} from "react"
 import {GeolocateControl, MapEvent} from "mapbox-gl"
 import {AircraftData} from "@/services/adsbTypes"
+import {useSelectedAircraft} from "@/lib/providers/SelectedAircraftContext"
 
 export enum LayerID {
   AirplaneIcons = "airplane-icons-layer",
@@ -24,12 +25,8 @@ export const getAircraftIcon = (aircraft: AircraftData): IconID => {
   return IconID.Airplane
 }
 
-type UseOnLoadMapParams = {
-  setSelectedHex: Dispatch<SetStateAction<string | null>>
-}
-
-export const useOnLoadMap = (params: UseOnLoadMapParams) => {
-  const {setSelectedHex} = params
+export const useOnLoadMap = () => {
+  const {setSelectedHex} = useSelectedAircraft()
 
   return useCallback(
     (e: MapEvent) => {

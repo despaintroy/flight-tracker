@@ -4,14 +4,15 @@ import {Layer, Source} from "react-map-gl"
 import {LayerID} from "@/components/MainMap/mainMapHelpers"
 import {AircraftWithHistory} from "@/lib/providers/AircraftHistoryContext"
 import {Feature, GeoJSON} from "geojson"
+import {useSelectedAircraft} from "@/lib/providers/SelectedAircraftContext"
 
 type AircraftPathsLayerProps = {
   aircraftWithHistories: AircraftWithHistory[]
-  selectedHex: string | null
 }
 
 const AircraftPathsLayer: FC<AircraftPathsLayerProps> = (props) => {
-  const {aircraftWithHistories, selectedHex} = props
+  const {aircraftWithHistories} = props
+  const {selectedHex} = useSelectedAircraft()
 
   const aircraftHistoriesGeoJSON = useMemo((): GeoJSON => {
     const limit = Date.now() - 30_000 // 30 seconds ago

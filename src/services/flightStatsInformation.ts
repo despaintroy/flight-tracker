@@ -21,7 +21,7 @@ type ResponseType =
 
 export type GetFlightStatsInformationParams = {
   /** Internal flight stats id */
-  flightId: string | undefined
+  flightId: number | undefined
   hex: string | undefined
 }
 

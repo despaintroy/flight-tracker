@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {FC, useRef, useState} from "react"
+import {FC, useRef} from "react"
 import Map, {MapRef} from "react-map-gl"
 import DetailsPopover from "@/components/DetailsPopover/DetailsPopover"
 import useADSBHistory from "@/lib/hooks/useADSBHistory"
@@ -12,6 +12,7 @@ import FilterModal from "@/components/FilterModal"
 import {z} from "zod"
 import {COORDINATES} from "@/lib/constants"
 import {useStorageState} from "@/lib/hooks/useStorageState"
+import {useSelectedAircraft} from "@/lib/providers/SelectedAircraftContext"
 
 const APP_VIEW_STATE_SCHEMA = z.object({
   longitude: z.number(),
@@ -38,11 +39,10 @@ const MainMap: FC = () => {
     defaultValue: DEFAULT_VIEW_STATE,
     schema: APP_VIEW_STATE_SCHEMA
   })
-  const [selectedHex, setSelectedHex] = useState<string | null>(null)
-  const onLoadMap = useOnLoadMap({setSelectedHex})
+  const {selectedHex} = useSelectedAircraft()
+  const onLoadMap = useOnLoadMap()
 
   const aircraftWithHistories = useADSBHistory({
-    selectedHex,
     coordinate: {
       lat: viewState.latitude,
       lon: viewState.longitude
@@ -67,14 +67,8 @@ const MainMap: FC = () => {
         fadeDuration={0}
         projection={{name: "globe"}}
       >
-        <AircraftLayers
-          aircraftWithHistories={aircraftWithHistories}
-          selectedHex={selectedHex}
-        />
-        <AircraftPathsLayer
-          aircraftWithHistories={aircraftWithHistories}
-          selectedHex={selectedHex}
-        />
+        <AircraftLayers aircraftWithHistories={aircraftWithHistories} />
+        <AircraftPathsLayer aircraftWithHistories={aircraftWithHistories} />
       </Map>
 
       <FilterModal />

@@ -13,6 +13,7 @@ import {Flight, Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
 import wikipedia from "wikipedia"
 import {
+  useFlightStatsInformation,
   useFlightStatsSearch,
   useFlightStatsTracker,
   usePhotos
@@ -39,6 +40,13 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
       search: aircraft?.flight ?? undefined
     })
   const flightStatsSearchResult = flightStatsSearch?.at(0)?._source
+  const {
+    data: flightStatsInformation,
+    isLoading: isLoadingFlightStatsInformation
+  } = useFlightStatsInformation({
+    flightId: flightStatsSearchResult?.flightId ?? undefined,
+    hex: aircraft?.hex ?? undefined
+  })
 
   useEffect(() => {
     if (flightStatsTracker)
@@ -49,6 +57,11 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     if (flightStatsSearch)
       console.debug("[flight-stats-search]", flightStatsSearch)
   }, [flightStatsSearch])
+
+  useEffect(() => {
+    if (flightStatsInformation)
+      console.debug("[flight-stats-information]", flightStatsInformation)
+  }, [flightStatsInformation])
 
   useEffect(() => {
     if (aircraft) console.debug("[aircraft-data]", aircraft)

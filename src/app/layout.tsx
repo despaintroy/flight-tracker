@@ -7,6 +7,7 @@ import {ToastProvider} from "@/lib/providers/ToastContext"
 import {AircraftHistoryProvider} from "@/lib/providers/AircraftHistoryContext"
 import ColorScheme from "@/components/ColorScheme"
 import QueryProvider from "@/lib/providers/QueryProvider"
+import SelectedAircraftProvider from "@/lib/providers/SelectedAircraftContext"
 
 export const metadata: Metadata = {
   title: "Flight Tracker",
@@ -45,8 +46,10 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <ThemeRegistry>
           <QueryProvider>
             <ToastProvider>
-              <ColorScheme />
-              <AircraftHistoryProvider>{children}</AircraftHistoryProvider>
+              <SelectedAircraftProvider>
+                <ColorScheme />
+                <AircraftHistoryProvider>{children}</AircraftHistoryProvider>
+              </SelectedAircraftProvider>
             </ToastProvider>
           </QueryProvider>
         </ThemeRegistry>

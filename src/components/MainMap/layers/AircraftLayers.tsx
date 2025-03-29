@@ -9,14 +9,15 @@ import {
   IconID,
   LayerID
 } from "@/components/MainMap/mainMapHelpers"
+import {useSelectedAircraft} from "@/lib/providers/SelectedAircraftContext"
 
 type AircraftLayersProps = {
   aircraftWithHistories: AircraftWithHistory[]
-  selectedHex: string | null
 }
 
 const AircraftLayers: FC<AircraftLayersProps> = (props) => {
-  const {aircraftWithHistories, selectedHex} = props
+  const {aircraftWithHistories} = props
+  const {selectedHex} = useSelectedAircraft()
 
   const airplanesGeoJSON = useMemo((): GeoJSON => {
     return {

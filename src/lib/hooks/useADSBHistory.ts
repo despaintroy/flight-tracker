@@ -4,16 +4,15 @@ import {
   AircraftWithHistory
 } from "@/lib/providers/AircraftHistoryContext"
 import {Coordinate} from "@/lib/constants"
+import {useSelectedAircraft} from "@/lib/providers/SelectedAircraftContext"
 
-type UseADSBHistoryParams = {coordinate: Coordinate; selectedHex: string | null}
+type UseADSBHistoryParams = {coordinate: Coordinate}
 
 const useADSBHistory = (
   params: UseADSBHistoryParams
 ): AircraftWithHistory[] => {
-  const {
-    coordinate: {lat, lon},
-    selectedHex
-  } = params
+  const {coordinate: {lat, lon}} = params
+  const {selectedHex} = useSelectedAircraft()
 
   const {aircraftMap, setMapCenter, activeHexes} = useContext(
     AircraftHistoryContext

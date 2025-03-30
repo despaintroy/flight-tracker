@@ -12,7 +12,8 @@ type AircraftPathsLayerProps = {
 
 const AircraftPathsLayer: FC<AircraftPathsLayerProps> = (props) => {
   const {aircraftWithHistories} = props
-  const {selectedHex} = useSelectedAircraft()
+  const {selectedAircraft} = useSelectedAircraft()
+  const selectedHex = selectedAircraft?.hex
 
   const aircraftHistoriesGeoJSON = useMemo((): GeoJSON => {
     const limit = Date.now() - 30_000 // 30 seconds ago
@@ -57,11 +58,16 @@ const AircraftPathsLayer: FC<AircraftPathsLayerProps> = (props) => {
         paint={{
           "line-color": [
             "case",
-            ["==", ["get", "hex"], selectedHex],
+            ["==", ["get", "hex"], selectedHex ?? null],
             "#00bbff",
             "#aaaaaa"
           ],
-          "line-width": ["case", ["==", ["get", "hex"], selectedHex], 2, 1]
+          "line-width": [
+            "case",
+            ["==", ["get", "hex"], selectedHex ?? null],
+            2,
+            1
+          ]
         }}
       />
     </Source>

@@ -12,7 +12,6 @@ import FilterModal from "@/components/FilterModal"
 import {z} from "zod"
 import {COORDINATES} from "@/lib/constants"
 import {useStorageState} from "@/lib/hooks/useStorageState"
-import {useSelectedAircraft} from "@/lib/providers/SelectedAircraftContext"
 
 const APP_VIEW_STATE_SCHEMA = z.object({
   longitude: z.number(),
@@ -39,7 +38,7 @@ const MainMap: FC = () => {
     defaultValue: DEFAULT_VIEW_STATE,
     schema: APP_VIEW_STATE_SCHEMA
   })
-  const {selectedHex} = useSelectedAircraft()
+
   const onLoadMap = useOnLoadMap()
 
   const aircraftWithHistories = useADSBHistory({
@@ -48,10 +47,6 @@ const MainMap: FC = () => {
       lon: viewState.longitude
     }
   })
-
-  const selectedAircraft =
-    aircraftWithHistories?.find(({aircraft}) => aircraft.hex === selectedHex)
-      ?.aircraft ?? null
 
   return (
     <>
@@ -72,7 +67,7 @@ const MainMap: FC = () => {
       </Map>
 
       <FilterModal />
-      <DetailsPopover aircraft={selectedAircraft} />
+      <DetailsPopover />
     </>
   )
 }

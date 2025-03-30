@@ -12,7 +12,8 @@ const useADSBHistory = (
   params: UseADSBHistoryParams
 ): AircraftWithHistory[] => {
   const {coordinate: {lat, lon}} = params
-  const {selectedHex} = useSelectedAircraft()
+  const {selectedAircraft} = useSelectedAircraft()
+  const selectedHex = selectedAircraft?.hex
 
   const {aircraftMap, setMapCenter, activeHexes} = useContext(
     AircraftHistoryContext

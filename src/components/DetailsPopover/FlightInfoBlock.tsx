@@ -1,16 +1,15 @@
-import {
-  Airport,
-  EstimatedActualTime,
-  FlightStatsTrackerData,
-  ScheduleTimes
-} from "@/services/flightStatsTracker.types"
 import {FC} from "react"
 import {Stack, Typography} from "@mui/joy"
 import {ChevronRight} from "@mui/icons-material"
+import {
+  NormalizedAirport,
+  useSelectedAircraft
+} from "@/lib/providers/SelectedAircraftContext"
+import {format} from "date-fns"
 
-const formatTime = (time: ScheduleTimes | EstimatedActualTime) => {
-  if (!time.time) return "–"
-  return `${time.time} ${time.ampm?.toLowerCase() ?? ""}`
+const formatTime = (time: string) => {
+  const date = new Date(time.slice(0, 16))
+  return format(date, "h:mm aa")
 }
 
 enum DelayStatus {
@@ -20,34 +19,27 @@ enum DelayStatus {
 }
 
 type AirportInfoProps = {
-  airport: Airport
+  airport: NormalizedAirport
   type: "departure" | "arrival"
 }
 
 const AirportInfo: FC<AirportInfoProps> = (props) => {
   const {type, airport} = props
-  const {times, gate, terminal, iata, city, state, baggage} = airport
-
-  // const isSame = times?.scheduled.time24 === times?.estimatedActual.time24
-  // const isDelayed = times?.estimatedActual.time24 > times?.scheduled.time24
+  const {gate, terminal, iata, city, baggage, gateTimes} = airport
 
   const delayStatus = (() => {
-    const estimated = times?.estimatedActual?.time24
-    const scheduled = times?.scheduled?.time24
-
-    if (!estimated || !scheduled) return DelayStatus.ON_TIME
-    if (estimated < scheduled) return DelayStatus.EARLY
-    if (estimated > scheduled) return DelayStatus.DELAYED
+    if (!gateTimes?.scheduled || !gateTimes.estimated)
+      return DelayStatus.ON_TIME
+    if (gateTimes.estimated < gateTimes.scheduled) return DelayStatus.EARLY
+    if (gateTimes.estimated > gateTimes.scheduled) return DelayStatus.DELAYED
     return DelayStatus.ON_TIME
   })()
-
-  const isActual = times?.estimatedActual?.title === "Actual"
 
   const gateLabel = (() => {
     if (!gate && !terminal) return "No gate info"
     if (terminal && !gate) return `Terminal ${terminal}`
     if (gate && !terminal) return `Gate ${gate}`
-    return `Gate ${gate} (T-${terminal})`
+    return `Gate ${gate} (Terminal ${terminal})`
   })()
 
   return (
@@ -64,7 +56,7 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
         textAlign={type === "departure" ? "left" : "right"}
         level="body-sm"
       >
-        {city}, {state}
+        {city}
       </Typography>
 
       <Stack
@@ -73,23 +65,20 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
         gap={1}
         mb={1}
       >
-        {times?.scheduled &&
-        (delayStatus !== DelayStatus.ON_TIME ||
-          !times?.estimatedActual?.time) ? (
+        {gateTimes?.scheduled &&
+        (delayStatus !== DelayStatus.ON_TIME || !gateTimes?.estimated) ? (
           <Typography
             sx={{color: "neutral.plainDisabledColor"}}
             lineHeight={1.2}
             noWrap
             style={{
-              textDecoration: times?.estimatedActual?.time
-                ? "line-through"
-                : undefined
+              textDecoration: gateTimes.estimated ? "line-through" : undefined
             }}
           >
-            {times?.scheduled.time}
+            {formatTime(gateTimes.scheduled)}
           </Typography>
         ) : null}
-        {times?.estimatedActual?.time ? (
+        {gateTimes?.estimated ? (
           <Typography
             sx={{
               color:
@@ -100,7 +89,7 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
             lineHeight={1.2}
             noWrap
           >
-            {formatTime(times?.estimatedActual)}
+            {formatTime(gateTimes.estimated)}
           </Typography>
         ) : null}
       </Stack>
@@ -123,24 +112,18 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
   )
 }
 
-type FlightInfoBlockProps = {
-  flightStats: FlightStatsTrackerData
-}
+const FlightInfoBlock: FC = () => {
+  const airports = useSelectedAircraft().selectedAircraft?.airports
+  if (!airports) return null
 
-const FlightInfoBlock: FC<FlightInfoBlockProps> = (props) => {
-  const {flightStats} = props
-
-  const departureAirport = flightStats.departureAirport
-  const destinationAirport =
-    flightStats.divertedAirport ?? flightStats.arrivalAirport
-
-  if (!departureAirport || !destinationAirport) return null
+  const {departure} = airports
+  const destination = airports.diversion ?? airports.arrival
 
   return (
     <Stack direction="row">
-      <AirportInfo airport={departureAirport} type="departure" />
+      <AirportInfo airport={departure} type="departure" />
       <ChevronRight sx={{fontSize: 36, marginTop: 1}} />
-      <AirportInfo airport={destinationAirport} type="arrival" />
+      <AirportInfo airport={destination} type="arrival" />
     </Stack>
   )
 }

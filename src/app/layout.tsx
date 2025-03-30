@@ -46,10 +46,10 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <ThemeRegistry>
           <QueryProvider>
             <ToastProvider>
-              <SelectedAircraftProvider>
-                <ColorScheme />
-                <AircraftHistoryProvider>{children}</AircraftHistoryProvider>
-              </SelectedAircraftProvider>
+              <ColorScheme />
+              <AircraftHistoryProvider>
+                <SelectedAircraftProvider>{children}</SelectedAircraftProvider>
+              </AircraftHistoryProvider>
             </ToastProvider>
           </QueryProvider>
         </ThemeRegistry>

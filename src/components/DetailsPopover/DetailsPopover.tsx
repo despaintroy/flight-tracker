@@ -1,5 +1,4 @@
-import {FC, useEffect} from "react"
-import {AircraftData, CATEGORY_DESCRIPTIONS} from "@/services/adsbTypes"
+import {FC} from "react"
 import {
   AspectRatio,
   Box,
@@ -11,97 +10,33 @@ import {
 } from "@mui/joy"
 import {Flight, Landscape, Speed} from "@mui/icons-material"
 import {knotsToMph} from "@/lib/helpers"
-import wikipedia from "wikipedia"
-import {
-  useFlightStatsInformation,
-  useFlightStatsSearch,
-  useFlightStatsTracker,
-  usePhotos
-} from "@/services/serviceHooks"
+import {useSelectedAircraft} from "@/lib/providers/SelectedAircraftContext"
 import FlightInfoBlock from "@/components/DetailsPopover/FlightInfoBlock"
 
-type DetailsPopoverProps = {
-  aircraft: AircraftData | null
-}
-
-const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
-  const {aircraft} = props
-  const {data: images, isLoading: isLoadingImages} = usePhotos({
-    hex: aircraft?.hex,
-    icaoType: aircraft?.t,
-    description: aircraft?.desc
-  })
-  const {data: flightStatsTracker} = useFlightStatsTracker({
-    callsign: aircraft?.flight ?? undefined,
-    hex: aircraft?.hex ?? undefined
-  })
-  const {data: flightStatsSearch, isLoading: isLoadingFlightStatsSearchResult} =
-    useFlightStatsSearch({
-      search: aircraft?.flight ?? undefined
-    })
-  const flightStatsSearchResult = flightStatsSearch?.at(0)?._source
+const DetailsPopover: FC = () => {
+  const {selectedAircraft} = useSelectedAircraft()
   const {
-    data: flightStatsInformation,
-    isLoading: isLoadingFlightStatsInformation
-  } = useFlightStatsInformation({
-    flightId: flightStatsSearchResult?.flightId ?? undefined,
-    hex: aircraft?.hex ?? undefined
-  })
-
-  useEffect(() => {
-    if (flightStatsTracker)
-      console.debug("[flight-stats-tracker]", flightStatsTracker)
-  }, [flightStatsTracker])
-
-  useEffect(() => {
-    if (flightStatsSearch)
-      console.debug("[flight-stats-search]", flightStatsSearch)
-  }, [flightStatsSearch])
-
-  useEffect(() => {
-    if (flightStatsInformation)
-      console.debug("[flight-stats-information]", flightStatsInformation)
-  }, [flightStatsInformation])
-
-  useEffect(() => {
-    if (aircraft) console.debug("[aircraft-data]", aircraft)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aircraft?.hex])
-
-  useEffect(() => {
-    if (!aircraft?.desc) return
-
-    wikipedia
-      .search(aircraft.desc)
-      .then((results) => results.results[0].title)
-      .then((title) => wikipedia.infobox(title))
-  }, [aircraft?.desc])
-
-  if (!aircraft) return null
-
-  const image = images?.at(0)
+    altitudeFt,
+    groundSpeedMph,
+    climbRateFpm,
+    category,
+    airports,
+    owner,
+    flightNumber,
+    images,
+    description,
+    callsign
+  } = selectedAircraft ?? {}
 
   const routeDescription = (() => {
-    if (!flightStatsSearchResult) return null
-    const {
-      departureAirportCity,
-      departureAirport,
-      arrivalAirportCity,
-      arrivalAirport
-    } = flightStatsSearchResult
+    if (!airports) return null
+    const {departure, diversion, arrival} = airports
+    const destination = diversion ?? arrival
 
-    return `${departureAirportCity} (${departureAirport}) → ${arrivalAirportCity} (${arrivalAirport})`
+    return `${departure.city} (${departure.iata}) → ${destination.city} (${destination.iata})`
   })()
 
-  const flightNumberDisplay = (() => {
-    if (isLoadingFlightStatsSearchResult) return "–"
-
-    const carrierString = [
-      flightStatsSearchResult?.carrier ?? "",
-      flightStatsSearchResult?.flightNumber ?? ""
-    ].join("")
-    return carrierString || aircraft.flight?.trim()
-  })()
+  if (!selectedAircraft) return null
 
   return (
     <Sheet
@@ -122,15 +57,15 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
     >
       <Stack mb={2} position="relative">
         <AspectRatio sx={{minWidth: 200, overflow: "none", m: -2, mb: 0}}>
-          {isLoadingImages ? (
+          {images === undefined ? (
             <Skeleton variant="rectangular" />
-          ) : !image ? (
+          ) : images.length === 0 ? (
             <Box sx={{bg: "background.level1"}}>
               <Typography>No image available</Typography>
             </Box>
           ) : (
             <img
-              src={image.src ?? undefined}
+              src={images[0].src ?? undefined}
               alt=""
               style={{
                 objectFit: "contain",
@@ -141,7 +76,7 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
           )}
         </AspectRatio>
 
-        {image?.attribution ? (
+        {images?.at(0)?.attribution ? (
           <Typography
             level="body-xs"
             fontStyle="italic"
@@ -151,61 +86,49 @@ const DetailsPopover: FC<DetailsPopoverProps> = (props) => {
             top={-18}
             sx={{bgcolor: "rgb(0 0 0 / 50%)", color: "white"}}
           >
-            {image.attribution}
+            {images[0].attribution}
           </Typography>
         ) : null}
       </Stack>
 
       <Typography level="body-xs">
         {[
-          flightNumberDisplay,
-          isLoadingFlightStatsSearchResult
-            ? null
-            : flightStatsSearchResult?.carrierName || aircraft.ownOp
-        ]
-          .filter(Boolean)
-          .join(" – ") || "No operator information"}
+          flightNumber || callsign,
+          owner?.airlineName ||
+            owner?.registeredOwner ||
+            "No operator information"
+        ].join(" – ")}
       </Typography>
-      <Typography level="title-lg">
-        {aircraft.desc ||
-          flightStatsTracker?.additionalFlightInfo?.equipment?.name ||
-          aircraft.t ||
-          "Unknown type"}
-      </Typography>
+      <Typography level="title-lg">{description}</Typography>
       {routeDescription ? (
         <Typography level="body-md">{routeDescription}</Typography>
       ) : null}
 
       <Divider sx={{my: 2}} />
 
-      {aircraft.alt_baro ? (
+      {altitudeFt !== undefined ? (
         <Typography startDecorator={<Landscape fontSize="small" />}>
-          {aircraft.alt_baro === "ground"
-            ? "On ground"
-            : `${aircraft.alt_baro} ft`}
-
-          {aircraft.baro_rate ? ` (${aircraft.baro_rate} fpm)` : null}
+          {altitudeFt === "ground" ? "On ground" : `${altitudeFt} ft`}
+          {climbRateFpm !== undefined ? ` (${climbRateFpm} fpm)` : null}
         </Typography>
       ) : null}
 
-      {aircraft.gs ? (
+      {groundSpeedMph !== undefined ? (
         <Typography startDecorator={<Speed fontSize="small" />}>
-          {`${Math.round(knotsToMph(aircraft.gs))} mph`}
+          {`${Math.round(knotsToMph(groundSpeedMph))} mph`}
         </Typography>
       ) : null}
 
-      {aircraft.category ? (
+      {category ? (
         <Typography startDecorator={<Flight fontSize="small" />}>
-          {aircraft.category}
-          {" – "}
-          {CATEGORY_DESCRIPTIONS.get(aircraft.category) ?? "Unknown category"}
+          {`${category.code} – ${category.description || "Unknown category"}`}
         </Typography>
       ) : null}
 
-      {flightStatsTracker ? (
+      {airports ? (
         <>
           <Divider sx={{my: 2}} />
-          <FlightInfoBlock flightStats={flightStatsTracker} />
+          <FlightInfoBlock />
         </>
       ) : null}
     </Sheet>

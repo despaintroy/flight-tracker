@@ -17,7 +17,7 @@ type AircraftLayersProps = {
 
 const AircraftLayers: FC<AircraftLayersProps> = (props) => {
   const {aircraftWithHistories} = props
-  const {selectedHex} = useSelectedAircraft()
+  const {selectedAircraft} = useSelectedAircraft()
 
   const airplanesGeoJSON = useMemo((): GeoJSON => {
     return {
@@ -47,7 +47,7 @@ const AircraftLayers: FC<AircraftLayersProps> = (props) => {
   const selectableSymbolPaint: SymbolLayerSpecification["paint"] = {
     "icon-color": [
       "case",
-      ["==", ["get", "hex"], selectedHex],
+      ["==", ["get", "hex"], selectedAircraft?.hex ?? null],
       "#00bbff",
       "#aaaaaa"
     ]

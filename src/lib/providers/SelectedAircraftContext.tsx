@@ -18,7 +18,7 @@ import {
 } from "@/services/serviceHooks"
 import {Photo} from "@/services/photos"
 
-type ScheduledTimes = {
+export type ScheduledTimes = {
   scheduled: string | undefined
   estimated: string | undefined
   estimatedIsActual: boolean

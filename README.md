@@ -4,8 +4,8 @@
 
 ### Followed Flights
 
-- Follow my flight
-- Favorite flights
+- ⭐️Follow my flight
+- Favorite flights 
 - Handle diverted messaging
 - Progress in current flight (time to arrival)
 
@@ -13,10 +13,17 @@
 
 - Show engine info
 - Wikipedia info box
-- Height above nearest airport
+- Height above destination airport
 - Explore more flight stats APIs
-- Details from FAA delays, times
+- ⭐️Stepper with gate, takeoff, landing, gate times
+- ⭐️Details from FAA delays, times, airport events
+- Planned flight path
+- ⭐Check search results for best time
+- Show seat map
+- Handle diverted messaging
 - Refresh interval
+- Calculate time to destination if on final approach
+- Clean up history from apis based on change in speed
 
 ### PWA
 

@@ -37,7 +37,7 @@ export const useFlightStatsInformation = (
   const flightStatsInformationQueryResult = useQuery({
     queryKey: ["flightStatsInformation", params],
     queryFn: () => getFlightStatsInformation(params),
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
     refetchOnWindowFocus: true
   })
 
@@ -51,11 +51,15 @@ export const useFlightStatsInformation = (
   return flightStatsInformationQueryResult
 }
 
+/**
+ * TODO:
+ * if empty, use route, resultHeader.carrier.fs + resultHeader.flightNumber
+ */
 export const useFlightStatsSearch = (params: GetFlightStatsSearchParams) => {
   return useQuery({
     queryKey: ["flightStatsSearch", params],
     queryFn: () => getFlightStatsSearch(params),
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
     refetchOnWindowFocus: true
   })
 }

@@ -38,6 +38,7 @@ const ScheduledTimesPresentation = (props: ScheduledTimesPresentationProps) => {
     return (
       <Typography
         sx={{color: "neutral.plainDisabledColor"}}
+        textAlign={rightAligned ? "right" : "left"}
         lineHeight={1.2}
         noWrap
       >

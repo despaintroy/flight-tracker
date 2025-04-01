@@ -13,14 +13,21 @@ const MINUTE_MS = 1000 * 60
 
 // Formats distance between now and the given date in hours and minutes
 const formatHoursMinutesToNow = (date: string) => {
-  const now = new Date()
+  const now = Date.now()
   const targetDate = new Date(date)
-  const diffInMs = Math.abs(targetDate.getTime() - now.getTime())
+  const diffInMs = targetDate.getTime() - now
+  const absDiffInMs = Math.abs(diffInMs)
 
-  const hours = Math.floor(diffInMs / HOUR_MS)
-  const minutes = Math.floor((diffInMs % HOUR_MS) / MINUTE_MS)
+  const hours = Math.floor(absDiffInMs / HOUR_MS)
+  const minutes = Math.floor((absDiffInMs % HOUR_MS) / MINUTE_MS)
 
-  return hours ? `${hours}h ${minutes}m` : `${minutes}m`
+  const formattedString = hours ? `${hours}h ${minutes}m` : `${minutes}m`
+
+  return {
+    formattedString,
+    isPast: diffInMs < 0,
+    isZero: hours === 0 && minutes === 0
+  }
 }
 
 type AirportInfoProps = {
@@ -88,21 +95,16 @@ type StepperStepProps = {
 const StepperStep: FC<StepperStepProps> = (props) => {
   const {times, pastLabel, presentLabel} = props
 
-  const isComplete = times?.estimatedIsActual
-  const isInFuture =
-    !!times?.estimated &&
-    !isComplete &&
-    new Date(times.estimated).getTime() > Date.now()
+  const time = times?.estimated || times?.scheduled
+  const toNow = time ? formatHoursMinutesToNow(time) : null
+  const isComplete = !!times?.estimatedIsActual
 
-  const formattedHoursMinutes = times?.estimated
-    ? formatHoursMinutesToNow(times.estimated)
-    : null
-
-  const label = isComplete
-    ? pastLabel
-    : isInFuture && formattedHoursMinutes !== "0m"
-      ? `${presentLabel} in ${formatHoursMinutesToNow(times.estimated!)}`
-      : `${presentLabel} Now`
+  const label = (() => {
+    if (isComplete) return pastLabel
+    if (!toNow) return presentLabel
+    if (toNow.isZero || toNow.isPast) return `${presentLabel} Now`
+    return `${presentLabel} in ${toNow?.formattedString}`
+  })()
 
   return (
     <Step

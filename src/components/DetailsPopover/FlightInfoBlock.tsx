@@ -3,6 +3,7 @@ import {Stack, Step, StepIndicator, Stepper, Typography} from "@mui/joy"
 import {Check, ChevronRight} from "@mui/icons-material"
 import {
   NormalizedAirport,
+  ScheduledTimes,
   useSelectedAircraft
 } from "@/lib/providers/SelectedAircraftContext"
 import ScheduledTimesPresentation from "@/components/ScheduledTimesPresentation"
@@ -78,6 +79,48 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
   )
 }
 
+type StepperStepProps = {
+  times: ScheduledTimes | undefined
+  pastLabel: string
+  presentLabel: string
+}
+
+const StepperStep: FC<StepperStepProps> = (props) => {
+  const {times, pastLabel, presentLabel} = props
+
+  const isComplete = times?.estimatedIsActual
+  const isInFuture =
+    !!times?.estimated &&
+    !isComplete &&
+    new Date(times.estimated).getTime() > Date.now()
+
+  const formattedHoursMinutes = times?.estimated
+    ? formatHoursMinutesToNow(times.estimated)
+    : null
+
+  const label = isComplete
+    ? pastLabel
+    : isInFuture && formattedHoursMinutes !== "0m"
+      ? `${presentLabel} in ${formatHoursMinutesToNow(times.estimated!)}`
+      : `${presentLabel} Now`
+
+  return (
+    <Step
+      indicator={
+        <StepIndicator
+          variant="solid"
+          color={isComplete ? "primary" : "neutral"}
+        >
+          {isComplete ? <Check /> : null}
+        </StepIndicator>
+      }
+    >
+      <Typography>{label}</Typography>
+      <ScheduledTimesPresentation times={times} />
+    </Step>
+  )
+}
+
 type StatusStepperProps = {
   departure: NormalizedAirport
   destination: NormalizedAirport
@@ -88,137 +131,29 @@ const StatusStepper: FC<StatusStepperProps> = (props) => {
 
   return (
     <Stepper orientation="vertical" size="sm" sx={{mt: 2}}>
-      {/* LEAVING GATE */}
-      {(() => {
-        const times = departure.gateTimes
-        const didDepart = times?.estimatedIsActual
+      <StepperStep
+        times={departure.gateTimes}
+        pastLabel="Departed Gate"
+        presentLabel="Departing Gate"
+      />
 
-        const isInFuture =
-          !!times?.estimated &&
-          !didDepart &&
-          new Date(times.estimated).getTime() > Date.now()
+      <StepperStep
+        times={departure.runwayTimes}
+        pastLabel="Took Off"
+        presentLabel="Taking Off"
+      />
 
-        const label = didDepart
-          ? "Departed Gate"
-          : isInFuture
-            ? `Departing in ${formatHoursMinutesToNow(times.estimated!)}`
-            : "Departing Gate Now"
+      <StepperStep
+        times={destination.runwayTimes}
+        pastLabel="Landed"
+        presentLabel="Landing"
+      />
 
-        return (
-          <Step
-            indicator={
-              <StepIndicator
-                variant="solid"
-                color={didDepart ? "primary" : "neutral"}
-              >
-                {didDepart ? <Check /> : null}
-              </StepIndicator>
-            }
-          >
-            <Typography>{label}</Typography>
-            <ScheduledTimesPresentation times={times} />
-          </Step>
-        )
-      })()}
-
-      {/* TAKING OFF */}
-      {(() => {
-        const times = departure.runwayTimes
-        const didTakeOff = times?.estimatedIsActual
-
-        const isInFuture =
-          !!times?.estimated &&
-          !didTakeOff &&
-          new Date(times.estimated).getTime() > Date.now()
-
-        const label = didTakeOff
-          ? "Took Off"
-          : isInFuture
-            ? `Taking off in ${formatHoursMinutesToNow(times.estimated!)}`
-            : "Taking Off Now"
-
-        return (
-          <Step
-            indicator={
-              <StepIndicator
-                variant="solid"
-                color={didTakeOff ? "primary" : "neutral"}
-              >
-                {didTakeOff ? <Check /> : null}
-              </StepIndicator>
-            }
-          >
-            <Typography>{label}</Typography>
-            <ScheduledTimesPresentation times={times} />
-          </Step>
-        )
-      })()}
-
-      {/* LANDING */}
-      {(() => {
-        const times = destination.runwayTimes
-        const didLand = times?.estimatedIsActual
-
-        const isInFuture =
-          !!times?.estimated &&
-          !didLand &&
-          new Date(times.estimated).getTime() > Date.now()
-
-        const label = didLand
-          ? "Landed"
-          : isInFuture
-            ? `Landing in ${formatHoursMinutesToNow(times.estimated!)}`
-            : "Landing Now"
-
-        return (
-          <Step
-            indicator={
-              <StepIndicator
-                variant="solid"
-                color={didLand ? "primary" : "neutral"}
-              >
-                {didLand ? <Check /> : null}
-              </StepIndicator>
-            }
-          >
-            <Typography>{label}</Typography>
-            <ScheduledTimesPresentation times={times} />
-          </Step>
-        )
-      })()}
-
-      {/* ARRIVING AT GATE */}
-      {(() => {
-        const times = destination.gateTimes
-        const didArrive = times?.estimatedIsActual
-
-        const isInFuture =
-          !!times?.estimated &&
-          !didArrive &&
-          new Date(times.estimated).getTime() > Date.now()
-
-        const label = didArrive
-          ? "Arrived at Gate"
-          : isInFuture
-            ? `Arriving at Gate in ${formatHoursMinutesToNow(times.estimated!)}`
-            : "Arriving at Gate Now"
-
-        return (
-          <Step
-            indicator={
-              <StepIndicator
-                variant="solid"
-                color={didArrive ? "primary" : "neutral"}
-              >
-                {didArrive ? <Check /> : null}
-              </StepIndicator>
-            }
-          >
-            <Typography>{label}</Typography>
-            <ScheduledTimesPresentation times={times} />
-          </Step>
-        )
-      })()}
+      <StepperStep
+        times={destination.gateTimes}
+        pastLabel="Arrived at Gate"
+        presentLabel="Arriving at Gate"
+      />
     </Stepper>
   )
 }

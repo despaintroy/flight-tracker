@@ -1,5 +1,5 @@
 import {FC} from "react"
-import {Stack, Step, StepIndicator, Stepper, Typography} from "@mui/joy"
+import {Box, Stack, Step, StepIndicator, Stepper, Typography} from "@mui/joy"
 import {Check, ChevronRight} from "@mui/icons-material"
 import {
   NormalizedAirport,
@@ -11,20 +11,28 @@ import ScheduledTimesPresentation from "@/components/ScheduledTimesPresentation"
 const HOUR_MS = 1000 * 60 * 60
 const MINUTE_MS = 1000 * 60
 
-// Formats distance between now and the given date in hours and minutes
-const formatHoursMinutesToNow = (date: string) => {
-  const now = Date.now()
-  const targetDate = new Date(date)
-  const diffInMs = targetDate.getTime() - now
+const differenceInHoursMinutes = (date1: string, date2: string) => {
+  const ms1 = new Date(date1).getTime()
+  const ms2 = new Date(date2).getTime()
+  const diffInMs = ms1 - ms2
   const absDiffInMs = Math.abs(diffInMs)
 
   const hours = Math.floor(absDiffInMs / HOUR_MS)
   const minutes = Math.floor((absDiffInMs % HOUR_MS) / MINUTE_MS)
+  return {hours, minutes, diffInMs}
+}
 
-  const formattedString = hours ? `${hours}h ${minutes}m` : `${minutes}m`
+const formatHoursMinutes = (hours: number, minutes: number) =>
+  hours === 0 ? `${minutes}m` : `${hours}h ${minutes}m`
+
+const formatHoursMinutesToNow = (date: string) => {
+  const {hours, minutes, diffInMs} = differenceInHoursMinutes(
+    date,
+    new Date().toISOString()
+  )
 
   return {
-    formattedString,
+    formattedString: formatHoursMinutes(hours, minutes),
     isPast: diffInMs < 0,
     isZero: hours === 0 && minutes === 0
   }
@@ -63,10 +71,12 @@ const AirportInfo: FC<AirportInfoProps> = (props) => {
         {city}
       </Typography>
 
-      <ScheduledTimesPresentation
-        times={gateTimes}
-        rightAligned={type === "arrival"}
-      />
+      <Box mb={1}>
+        <ScheduledTimesPresentation
+          times={gateTimes}
+          rightAligned={type === "arrival"}
+        />
+      </Box>
 
       <Typography
         lineHeight={1.2}
@@ -106,6 +116,19 @@ const StepperStep: FC<StepperStepProps> = (props) => {
     return `${presentLabel} in ${toNow?.formattedString}`
   })()
 
+  const delayLabel = (() => {
+    const delay =
+      times?.estimated && times.scheduled
+        ? differenceInHoursMinutes(times.estimated, times.scheduled)
+        : null
+
+    if (!delay) return null
+    if (delay.hours === 0 && delay.minutes === 0) return "On Time"
+    if (delay.diffInMs < 0)
+      return `${formatHoursMinutes(delay.hours, delay.minutes)} ahead of schedule`
+    return `${formatHoursMinutes(delay.hours, delay.minutes)} behind schedule`
+  })()
+
   return (
     <Step
       indicator={
@@ -117,8 +140,15 @@ const StepperStep: FC<StepperStepProps> = (props) => {
         </StepIndicator>
       }
     >
-      <Typography>{label}</Typography>
-      <ScheduledTimesPresentation times={times} />
+      <Typography lineHeight={1}>{label}</Typography>
+      <Box mb={2}>
+        <ScheduledTimesPresentation times={times} />
+        {delayLabel ? (
+          <Typography level="body-sm" lineHeight={1}>
+            {delayLabel}
+          </Typography>
+        ) : null}
+      </Box>
     </Step>
   )
 }

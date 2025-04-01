@@ -51,7 +51,6 @@ const ScheduledTimesPresentation = (props: ScheduledTimesPresentationProps) => {
     <Stack
       direction="row"
       gap={1}
-      mb={1}
       justifyContent={rightAligned ? "flex-end" : "flex-start"}
     >
       {!areSameTime ? (
